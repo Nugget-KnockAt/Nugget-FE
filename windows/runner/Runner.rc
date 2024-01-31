@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "knock_at" "\0"
+            VALUE "FileDescription", "nugget" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "knock_at" "\0"
+            VALUE "InternalName", "nugget" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "knock_at.exe" "\0"
-            VALUE "ProductName", "knock_at" "\0"
+            VALUE "OriginalFilename", "nugget.exe" "\0"
+            VALUE "ProductName", "nugget" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

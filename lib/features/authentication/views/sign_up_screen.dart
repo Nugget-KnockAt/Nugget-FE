@@ -1,25 +1,53 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:nugget/common/constants/gaps.dart';
+import 'package:nugget/common/constants/sizes.dart';
+import 'package:nugget/features/authentication/views/widgets/login_button.dart';
+import 'package:nugget/features/camera/views/camera_screen.dart';
 
-import 'package:knock_at/constants/gaps.dart';
-import 'package:knock_at/constants/sizes.dart';
-import 'package:knock_at/features/authentication/views/widgets/kakao_login.dart';
-import 'package:knock_at/features/authentication/views/widgets/login_button.dart';
-
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
-  void _onTapKakaoLoginButton(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.transparent,
-      context: context,
-      builder: (context) {
-        return const KakaoLogin();
-      },
-    );
-  }
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+  String? _userToken;
+
+  final Dio dio = Dio();
+  final storage = const FlutterSecureStorage();
+
+  // Kakao OAuth configuration
+  final clientId = 'b721de5fbf402ff1131e42e1ce771b92';
+  final redirectUri = 'http://52.79.220.245:8080/login/oauth2/kakao/callback';
+  final authorizationUrl = 'https://kauth.kakao.com/oauth/authorize';
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+
+    // 유저 토큰을 가져옴.
+    _getUserToken();
+  }
+
+  void _getUserToken() async {
+    _userToken = await storage.read(key: 'ACCESS_TOKEN');
+    if (_userToken != null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const CameraScreen()),
+        (route) => false,
+      );
+    }
+  }
+
+  Future<void> _onTapUserKakaoLoginButton(BuildContext context) async {}
+
+  @override
+  Widget build(BuildContext contex) {
     void onTapGuardian() {
       showModalBottomSheet(
         constraints: const BoxConstraints(
@@ -75,7 +103,7 @@ class SignUpScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
-                    onTap: () => _onTapKakaoLoginButton(context),
+                    onTap: () => _onTapUserKakaoLoginButton(context),
                     child: const LoginButton(
                       iconPath: 'assets/icons/kakao.svg',
                       text: 'Continue with Kakao',

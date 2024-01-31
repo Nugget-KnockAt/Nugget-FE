@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:knock_at/constants/gaps.dart';
-import 'package:knock_at/constants/sizes.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/common/constants/gaps.dart';
+import 'package:nugget/common/constants/sizes.dart';
 
-class PhoneNumberScreen extends StatefulWidget {
+import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
+
+class PhoneNumberScreen extends ConsumerStatefulWidget {
   const PhoneNumberScreen({super.key, required this.onNext});
 
   final Function onNext;
 
   @override
-  State<PhoneNumberScreen> createState() => _PhoneNumberScreenState();
+  PhoneNumberScreenState createState() => PhoneNumberScreenState();
 }
 
-class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
+class PhoneNumberScreenState extends ConsumerState<PhoneNumberScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
 
   String _phoneNumber = '';
@@ -64,6 +67,13 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
     return null;
   }
 
+  void _onNextTap() {
+    ref
+        .read(userInfoViewModelProvider.notifier)
+        .updatePhoneNumber(_phoneNumber);
+    widget.onNext();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,7 +104,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
             ),
             Gaps.v52,
             GestureDetector(
-              onTap: _validateNumber() ? () => widget.onNext() : null,
+              onTap: _validateNumber() ? _onNextTap : null,
               child: FractionallySizedBox(
                 widthFactor: 1,
                 child: AnimatedContainer(

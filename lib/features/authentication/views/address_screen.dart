@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:knock_at/constants/gaps.dart';
-import 'package:knock_at/constants/sizes.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/common/constants/gaps.dart';
+import 'package:nugget/common/constants/sizes.dart';
+
+import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:kpostal/kpostal.dart';
 
-class AddressScreen extends StatefulWidget {
+class AddressScreen extends ConsumerStatefulWidget {
   const AddressScreen({super.key, required this.onNext});
 
   final Function onNext;
 
   @override
-  State<AddressScreen> createState() => _AddressScreenState();
+  AddressScreenState createState() => AddressScreenState();
 }
 
-class _AddressScreenState extends State<AddressScreen> {
+class AddressScreenState extends ConsumerState<AddressScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _detailAddressController =
       TextEditingController();
@@ -55,13 +58,22 @@ class _AddressScreenState extends State<AddressScreen> {
       MaterialPageRoute(
         builder: (context) => KpostalView(
           callback: (Kpostal result) {
-            setState(() {
-              _addressController.text = result.address;
-            });
+            setState(
+              () {
+                _addressController.text = result.address;
+              },
+            );
           },
         ),
       ),
     );
+  }
+
+  void _onNextTap() {
+    final address = '$_address $_detailAddress';
+
+    ref.read(userInfoViewModelProvider.notifier).updateAddress(address);
+    widget.onNext();
   }
 
   @override
@@ -104,7 +116,7 @@ class _AddressScreenState extends State<AddressScreen> {
             ),
             Gaps.v52,
             GestureDetector(
-              onTap: _validateNumber() ? () => widget.onNext() : null,
+              onTap: _validateNumber() ? _onNextTap : null,
               child: FractionallySizedBox(
                 widthFactor: 1,
                 child: AnimatedContainer(

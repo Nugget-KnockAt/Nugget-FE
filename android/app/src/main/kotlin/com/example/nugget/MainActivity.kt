@@ -1,4 +1,4 @@
-package com.example.knock_at
+package com.example.nugget
 
 import io.flutter.embedding.android.FlutterActivity
 

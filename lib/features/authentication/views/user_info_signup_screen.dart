@@ -1,23 +1,19 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:knock_at/constants/gaps.dart';
-import 'package:knock_at/constants/sizes.dart';
-import 'package:knock_at/features/authentication/views/address_screen.dart';
-import 'package:knock_at/features/authentication/views/email_screen.dart';
-import 'package:knock_at/features/authentication/views/name_screen.dart';
-import 'package:knock_at/features/authentication/views/phone_number_screen.dart';
-import 'package:knock_at/features/authentication/views/terms_and_conditions_screen.dart';
+import 'package:nugget/features/authentication/views/address_screen.dart';
+import 'package:nugget/features/authentication/views/email_screen.dart';
+import 'package:nugget/features/authentication/views/name_screen.dart';
+import 'package:nugget/features/authentication/views/phone_number_screen.dart';
+import 'package:nugget/features/authentication/views/terms_and_conditions_screen.dart';
 
-class UserInfoScreen extends ConsumerStatefulWidget {
-  const UserInfoScreen({super.key});
+class UserInfoSignUpScreen extends ConsumerStatefulWidget {
+  const UserInfoSignUpScreen({super.key});
 
   @override
-  UserInfoScreenState createState() => UserInfoScreenState();
+  UserInfoSignUpScreenState createState() => UserInfoSignUpScreenState();
 }
 
-class UserInfoScreenState extends ConsumerState<UserInfoScreen>
+class UserInfoSignUpScreenState extends ConsumerState<UserInfoSignUpScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 

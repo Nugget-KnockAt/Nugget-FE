@@ -1,29 +1,27 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk_template.dart';
-import 'package:knock_at/features/authentication/views/sign_up_screen.dart';
-import 'package:knock_at/features/authentication/views/user_info_screen.dart';
+import 'package:nugget/features/authentication/views/sign_up_screen.dart';
 
-void main() {
+void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
-  KakaoSdk.init(
-    nativeAppKey: 'b372bc87737436595e74d6a02e16c3f3',
-  );
-
+  // 세로 모드 고정
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   runApp(
     const ProviderScope(
-      child: MyApp(),
+      child: NuggetApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class NuggetApp extends StatelessWidget {
+  const NuggetApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -161,7 +159,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: GoogleFonts.notoSans().fontFamily,
       ),
-      home: const UserInfoScreen(),
+      home: const SignUpScreen(),
     );
   }
 }

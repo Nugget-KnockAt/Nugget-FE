@@ -1,125 +1,100 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:knock_at/features/authentication/models/user_info_model.dart';
+import 'package:nugget/features/authentication/models/user_info_model.dart';
 
-class UserInfoViewModel extends Notifier<UserInfoModel> {
-  void setUsername(String username) {
-    state = UserInfoModel(
-      username: username,
-      phoneNumber: state.phoneNumber,
-      address: state.address,
-      email: state.email,
-      isOverFourteen: state.isOverFourteen,
-      ageedToTermsOfUse: state.ageedToTermsOfUse,
-      agreedToPrivacyPolicy: state.agreedToPrivacyPolicy,
-      agreedToLocationService: state.agreedToLocationService,
-    );
+class UserInfoViewModel extends StateNotifier<UserInfoModel> {
+  UserInfoViewModel()
+      : super(UserInfoModel(
+          username: '',
+          phoneNumber: '',
+          address: '',
+          email: '',
+          isOverFourteen: false,
+          ageedToTermsOfUse: false,
+          agreedToPrivacyPolicy: false,
+          agreedToLocationService: false,
+          agreedToAll: false,
+        ));
+
+  void updateUsername(String username) {
+    state = state.copyWith(username: username);
   }
 
-  void setPhoneNumber(String phoneNumber) {
-    state = UserInfoModel(
-      username: state.username,
-      phoneNumber: phoneNumber,
-      address: state.address,
-      email: state.email,
-      isOverFourteen: state.isOverFourteen,
-      ageedToTermsOfUse: state.ageedToTermsOfUse,
-      agreedToPrivacyPolicy: state.agreedToPrivacyPolicy,
-      agreedToLocationService: state.agreedToLocationService,
-    );
+  void updatePhoneNumber(String phoneNumber) {
+    state = state.copyWith(phoneNumber: phoneNumber);
   }
 
-  void setAddress(String address) {
-    state = UserInfoModel(
-      username: state.username,
-      phoneNumber: state.phoneNumber,
-      address: address,
-      email: state.email,
-      isOverFourteen: state.isOverFourteen,
-      ageedToTermsOfUse: state.ageedToTermsOfUse,
-      agreedToPrivacyPolicy: state.agreedToPrivacyPolicy,
-      agreedToLocationService: state.agreedToLocationService,
-    );
+  void updateAddress(String address) {
+    state = state.copyWith(address: address);
   }
 
-  void setEmail(String email) {
-    state = UserInfoModel(
-      username: state.username,
-      phoneNumber: state.phoneNumber,
-      address: state.address,
-      email: email,
-      isOverFourteen: state.isOverFourteen,
-      ageedToTermsOfUse: state.ageedToTermsOfUse,
-      agreedToPrivacyPolicy: state.agreedToPrivacyPolicy,
-      agreedToLocationService: state.agreedToLocationService,
-    );
+  void updateEmail(String email) {
+    state = state.copyWith(email: email);
   }
 
-  void setIsOverFourteen(bool isOverFourteen) {
-    state = UserInfoModel(
-      username: state.username,
-      phoneNumber: state.phoneNumber,
-      address: state.address,
-      email: state.email,
-      isOverFourteen: isOverFourteen,
-      ageedToTermsOfUse: state.ageedToTermsOfUse,
-      agreedToPrivacyPolicy: state.agreedToPrivacyPolicy,
-      agreedToLocationService: state.agreedToLocationService,
-    );
+  void updateIsOverFourteen(bool isOverFourteen) {
+    state = state.copyWith(isOverFourteen: isOverFourteen);
+
+    isAllAgreed();
   }
 
-  void setAgreedToTermsOfUse(bool agreedToTermsOfUse) {
-    state = UserInfoModel(
-      username: state.username,
-      phoneNumber: state.phoneNumber,
-      address: state.address,
-      email: state.email,
-      isOverFourteen: state.isOverFourteen,
-      ageedToTermsOfUse: agreedToTermsOfUse,
-      agreedToPrivacyPolicy: state.agreedToPrivacyPolicy,
-      agreedToLocationService: state.agreedToLocationService,
-    );
+  void updateAgreedToTermsOfUse(bool agreedToTermsOfUse) {
+    state = state.copyWith(ageedToTermsOfUse: agreedToTermsOfUse);
+
+    isAllAgreed();
   }
 
-  void setAgreedToPrivacyPolicy(bool agreedToPrivacyPolicy) {
-    state = UserInfoModel(
-      username: state.username,
-      phoneNumber: state.phoneNumber,
-      address: state.address,
-      email: state.email,
-      isOverFourteen: state.isOverFourteen,
-      ageedToTermsOfUse: state.ageedToTermsOfUse,
-      agreedToPrivacyPolicy: agreedToPrivacyPolicy,
-      agreedToLocationService: state.agreedToLocationService,
-    );
+  void updateAgreedToPrivacyPolicy(bool agreedToPrivacyPolicy) {
+    state = state.copyWith(agreedToPrivacyPolicy: agreedToPrivacyPolicy);
+
+    isAllAgreed();
   }
 
-  void setAgreedToLocationService(bool agreedToLocationService) {
-    state = UserInfoModel(
-      username: state.username,
-      phoneNumber: state.phoneNumber,
-      address: state.address,
-      email: state.email,
-      isOverFourteen: state.isOverFourteen,
-      ageedToTermsOfUse: state.ageedToTermsOfUse,
-      agreedToPrivacyPolicy: state.agreedToPrivacyPolicy,
-      agreedToLocationService: agreedToLocationService,
-    );
+  void updateAgreedToLocationService(bool agreedToLocationService) {
+    state = state.copyWith(agreedToLocationService: agreedToLocationService);
+
+    isAllAgreed();
   }
 
-  @override
-  UserInfoModel build() {
-    return UserInfoModel(
-      username: '',
-      phoneNumber: '',
-      address: '',
-      email: '',
-      isOverFourteen: false,
-      ageedToTermsOfUse: false,
-      agreedToPrivacyPolicy: false,
-      agreedToLocationService: false,
-    );
+  void isAllAgreed() {
+    if (state.isOverFourteen &&
+        state.ageedToTermsOfUse &&
+        state.agreedToPrivacyPolicy &&
+        state.agreedToLocationService) {
+      state = state.copyWith(agreedToAll: true);
+    }
+    if (!state.isOverFourteen ||
+        !state.ageedToTermsOfUse ||
+        !state.agreedToPrivacyPolicy ||
+        !state.agreedToLocationService) {
+      state = state.copyWith(agreedToAll: false);
+    }
+  }
+
+  void updateAgreedToAll(bool agreedToAll) {
+    if (agreedToAll) {
+      state = state.copyWith(
+        agreedToAll: true,
+        isOverFourteen: true,
+        ageedToTermsOfUse: true,
+        agreedToPrivacyPolicy: true,
+        agreedToLocationService: true,
+      );
+    }
+    if (!agreedToAll) {
+      state = state.copyWith(
+        agreedToAll: false,
+        isOverFourteen: false,
+        ageedToTermsOfUse: false,
+        agreedToPrivacyPolicy: false,
+        agreedToLocationService: false,
+      );
+    }
   }
 }
 
-final userInfoProvider = NotifierProvider<UserInfoViewModel, UserInfoModel>(
-    () => UserInfoViewModel());
+final userInfoViewModelProvider =
+    StateNotifierProvider<UserInfoViewModel, UserInfoModel>(
+  (ref) {
+    return UserInfoViewModel();
+  },
+);

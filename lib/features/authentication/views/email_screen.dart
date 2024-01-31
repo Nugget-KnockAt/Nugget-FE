@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:knock_at/constants/gaps.dart';
-import 'package:knock_at/constants/sizes.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/common/constants/gaps.dart';
+import 'package:nugget/common/constants/sizes.dart';
 
-class EmailScreen extends StatefulWidget {
+import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
+
+class EmailScreen extends ConsumerStatefulWidget {
   const EmailScreen({super.key, required this.onNext});
 
   final Function onNext;
 
   @override
-  State<EmailScreen> createState() => _EmailScreenState();
+  EmailScreenState createState() => EmailScreenState();
 }
 
-class _EmailScreenState extends State<EmailScreen> {
+class EmailScreenState extends ConsumerState<EmailScreen> {
   final TextEditingController emailController = TextEditingController();
 
   String _email = '';
@@ -65,6 +68,12 @@ class _EmailScreenState extends State<EmailScreen> {
     return '이메일 주소를 확인해주세요.';
   }
 
+  void _onNextTap() {
+    ref.read(userInfoViewModelProvider.notifier).updateEmail(_email);
+
+    widget.onNext();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,7 +104,7 @@ class _EmailScreenState extends State<EmailScreen> {
             ),
             Gaps.v52,
             GestureDetector(
-              onTap: _validateEmail() ? () => widget.onNext() : null,
+              onTap: _validateEmail() ? _onNextTap : null,
               child: FractionallySizedBox(
                 widthFactor: 1,
                 child: AnimatedContainer(

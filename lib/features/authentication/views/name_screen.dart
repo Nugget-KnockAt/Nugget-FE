@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:knock_at/constants/gaps.dart';
-import 'package:knock_at/constants/sizes.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/common/constants/gaps.dart';
+import 'package:nugget/common/constants/sizes.dart';
+import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 
-class NameScreen extends StatefulWidget {
+class NameScreen extends ConsumerStatefulWidget {
   const NameScreen({super.key, required this.onNext});
 
   final Function onNext;
   @override
-  State<NameScreen> createState() => _NameScreenState();
+  NameScreenState createState() => NameScreenState();
 }
 
-class _NameScreenState extends State<NameScreen> {
+class NameScreenState extends ConsumerState<NameScreen> {
   final TextEditingController _nameController = TextEditingController();
 
   String _name = '';
@@ -83,6 +85,12 @@ class _NameScreenState extends State<NameScreen> {
     return null;
   }
 
+  void _onNextTap() {
+    ref.read(userInfoViewModelProvider.notifier).updateUsername(_name);
+
+    widget.onNext();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,7 +120,7 @@ class _NameScreenState extends State<NameScreen> {
             ),
             Gaps.v52,
             GestureDetector(
-              onTap: _validateName() ? () => widget.onNext() : null,
+              onTap: _validateName() ? _onNextTap : null,
               child: FractionallySizedBox(
                 widthFactor: 1,
                 child: AnimatedContainer(

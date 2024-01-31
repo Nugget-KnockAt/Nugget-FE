@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:knock_at/constants/sizes.dart';
+import 'package:nugget/common/constants/sizes.dart';
 
 class LoginButton extends StatelessWidget {
   const LoginButton({
