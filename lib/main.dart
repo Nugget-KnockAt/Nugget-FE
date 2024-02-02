@@ -3,18 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nugget/features/authentication/views/sign_up_screen.dart';
+
+import 'package:nugget/common/logger/logger.dart';
+
+import 'package:nugget/features/authentication/views/home_screen.dart';
+import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
 
 void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   // 세로 모드 고정
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
   runApp(
-    const ProviderScope(
-      child: NuggetApp(),
+    ProviderScope(
+      observers: [
+        Logger(),
+      ],
+      child: const NuggetApp(),
     ),
   );
 }
@@ -25,15 +32,19 @@ class NuggetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Knock At',
+      title: 'Nugget',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
+// Theme config for FlexColorScheme version 7.3.x. Make sure you use
+// same or higher package version, but still same major version. If you
+// use a lower package version, some properties may not be supported.
+// In that case remove them after copying this theme to your app.
       theme: FlexThemeData.light(
         scheme: FlexScheme.orangeM3,
         surfaceMode: FlexSurfaceMode.highScaffoldLowSurface,
-        blendLevel: 5,
+        blendLevel: 1,
         subThemesData: const FlexSubThemesData(
-          blendOnLevel: 10,
+          blendOnLevel: 8,
           blendOnColors: false,
           useTextTheme: true,
           useM2StyleDividerInM3: true,
@@ -91,9 +102,8 @@ class NuggetApp extends StatelessWidget {
         tones: FlexTones.jolly(Brightness.light),
         visualDensity: FlexColorScheme.comfortablePlatformDensity,
         useMaterial3: true,
-        fontFamily: GoogleFonts.notoSans().fontFamily,
         // To use the Playground font, add GoogleFonts package and uncomment
-        // fontFamily: GoogleFonts.notoSans().fontFamily,
+        fontFamily: GoogleFonts.notoSans().fontFamily,
       ),
       darkTheme: FlexThemeData.dark(
         scheme: FlexScheme.orangeM3,
@@ -157,9 +167,13 @@ class NuggetApp extends StatelessWidget {
         tones: FlexTones.jolly(Brightness.dark),
         visualDensity: FlexColorScheme.comfortablePlatformDensity,
         useMaterial3: true,
+        // To use the Playground font, add GoogleFonts package and uncomment
         fontFamily: GoogleFonts.notoSans().fontFamily,
       ),
-      home: const SignUpScreen(),
+// If you do not have a themeMode switch, uncomment this line
+// to let the device system mode control the theme mode:
+
+      home: const HomeScreen(),
     );
   }
 }
