@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nugget/common/constants/sizes.dart';
+import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});
@@ -21,10 +21,6 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   // 플래쉬 상태
   late final FlashMode _flashMode;
 
-  // 카메라와 마이크 권한이 허용되었는지 확인하는 변수
-  // 두 개 모두 허용되었을 때 true
-  bool _hasPermission = false;
-
   // 카메라가 초기화 되었는지 확인하는 변수
   bool _isCameraInitialized = false;
 
@@ -32,7 +28,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   void initState() {
     super.initState();
 
-    _initPermission();
+    _initCamera();
   }
 
   @override
@@ -44,65 +40,35 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   }
 
   // 카메라 초기화
-  Future<void> _initCamera() async {
-    // 사용 가능한 카메라들 목록을 가져온다.
-    final cameras = await availableCameras();
+  void _initCamera() async {
+    final bool isCameraPermissionGranted =
+        ref.read(cameraPermissionProvider.notifier).state;
 
-    // 후면 카메라를 사용한다.
-    final firstCamera = cameras.first;
+    // 사용자가 카메라 권한을 허용했는지 확인
+    if (isCameraPermissionGranted) {
+      // 사용 가능한 카메라들 목록을 가져온다.
+      final cameras = await availableCameras();
 
-    // 카메라 컨트롤러를 초기화한다.
-    _cameraController = CameraController(
-      firstCamera,
-      ResolutionPreset.ultraHigh,
-    );
+      // 후면 카메라를 사용한다.
+      final firstCamera = cameras.first;
 
-    // 카메라 컨트롤러 시작.
-    await _cameraController.initialize();
-    _flashMode = _cameraController.value.flashMode;
-
-    // 카메라 컨트롤러가 초기화되면 화면을 갱신한다.
-    _isCameraInitialized = true;
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> _initPermission() async {
-    final cameraPermission = await Permission.camera.request();
-    final microphonePermission = await Permission.microphone.request();
-
-    final cameraDenied =
-        cameraPermission.isDenied || cameraPermission.isPermanentlyDenied;
-    final microphoneDenied = microphonePermission.isDenied ||
-        microphonePermission.isPermanentlyDenied;
-
-    if (!cameraDenied && !microphoneDenied) {
-      // 카메라와 마이크 권한이 허용되었을 때
-      _hasPermission = true;
-      await _initCamera();
-    } else {
-      // 카메라와 마이크 권한이 거부되었을 때
-      if (!mounted) return;
-
-      // 카메라와 마이크 권한을 허용하도록 알림창을 띄운다.
-      await showCupertinoDialog(
-        context: context,
-        builder: (context) {
-          return CupertinoAlertDialog(
-            title: const Text('Nugget앱을 사용하기 위해선 카메라와 마이크 권한이 반드시 필요합니다.'),
-            content: const Text('카메라와 마이크 권한을 허용해주세요.'),
-            actions: [
-              CupertinoDialogAction(
-                child: const Text('확인'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
+      // 카메라 컨트롤러를 초기화한다.
+      _cameraController = CameraController(
+        firstCamera,
+        ResolutionPreset.ultraHigh,
       );
+
+      // 카메라 컨트롤러 시작.
+      await _cameraController.initialize();
+      _flashMode = _cameraController.value.flashMode;
+
+      // 카메라 컨트롤러가 초기화되면 화면을 갱신한다.
+      _isCameraInitialized = true;
+      if (mounted) {
+        setState(() {});
+      }
+    } else {
+      print('카메라 권한이 없습니다.');
     }
   }
 

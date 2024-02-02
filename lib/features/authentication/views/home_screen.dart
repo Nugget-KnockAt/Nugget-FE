@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 
@@ -8,11 +9,13 @@ import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
 import 'package:nugget/features/authentication/models/user_info_model.dart';
+import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:nugget/features/authentication/views/login_screen.dart';
 import 'package:nugget/features/authentication/views/sign_up_screen.dart';
 import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
 import 'package:nugget/features/member/views/camera_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const String routeName = 'signup';
@@ -86,10 +89,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _initPermission() async {
+    // 카메라와 마이크 권한 요청
+    // 이 두 개는 세트임. 둘 중 하나라도 거부되면 사용자에게 알림창을 띄워야 함.
+    final cameraPermission = await Permission.camera.request();
+    final microphonePermission = await Permission.microphone.request();
+    final locationPermission = await Permission.location.request();
+
+    final cameraDenied =
+        cameraPermission.isDenied || cameraPermission.isPermanentlyDenied;
+
+    final microphoneDenied = microphonePermission.isDenied ||
+        microphonePermission.isPermanentlyDenied;
+
+    if (!cameraDenied && !microphoneDenied) {
+      ref.read(cameraPermissionProvider.notifier).state = true;
+    } else {
+      // 카메라와 마이크 권한이 거부되었을 때
+      // 알림창을 띄워 사용자에게 권한을 허용하도록 요청한다.
+      if (!mounted) return;
+
+      // 알림창 띄움.
+      await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('Nugget앱을 사용하기 위해선 카메라와 마이크 권한이 반드시 필요합니다.'),
+            content: const Text('카메라와 마이크 권한을 허용해주세요.'),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('확인'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // 위치 권한이 허용되었는지 확인
+    if (locationPermission.isGranted) {
+      ref.read(locationPermissionProvider.notifier).state = true;
+    } else {
+      ref.read(locationPermissionProvider.notifier).state = false;
+    }
+  }
+
   // access token, refresh token이 있는지 확인하는 함수
   // 토큰이 있으면 기기에 저장되어 있는 사용자 정보를 불러오고
   // 사용자의 타입에 따라 다른 화면으로 이동한다.
   void _checkToken() async {
+    // 권한 요청
+    await _initPermission();
+
     // access token, refresh token이 있는지 확인
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);

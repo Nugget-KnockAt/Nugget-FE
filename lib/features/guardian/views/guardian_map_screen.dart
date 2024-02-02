@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class GuardianMapScreen extends ConsumerStatefulWidget {
@@ -12,47 +13,30 @@ class GuardianMapScreen extends ConsumerStatefulWidget {
 }
 
 class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
-  bool _hasPermission = false;
-  bool _isMapInitialized = false;
+  final bool _isMapInitialized = false;
 
   @override
   void initState() {
     super.initState();
 
-    _initPermission();
+    _initNaverMap();
   }
 
-  void _initPermission() async {
-    // 위치 권한 요청
-    final locationPermission = Permission.location.request();
+  void _initNaverMap() async {
+    final bool isLocationPermissionGranted =
+        ref.read(locationPermissionProvider.notifier).state;
 
-    // 위치 권한이 허용되었는지 확인
-    if (await locationPermission.isGranted) {
-      // 허용되었으면 true
-      _hasPermission = true;
+    if (isLocationPermissionGranted) {
+      await NaverMapSdk.instance.initialize(
+        clientId: "3emvinr9f6",
+        onAuthFailed: (ex) {
+          print("********* 네이버맵 인증오류 : $ex *********");
+        },
+      );
 
-      // 네이버맵 초기화
-      await _initNaverMap();
-      _isMapInitialized = true;
-      if (mounted) {
-        setState(() {});
-      }
-    } else {
-      // 허용되지 않았으면 false
-      _hasPermission = false;
-    }
-  }
-
-  Future<void> _initNaverMap() async {
-    await NaverMapSdk.instance.initialize(
-      clientId: "3emvinr9f6",
-      onAuthFailed: (ex) {
-        print("********* 네이버맵 인증오류 : $ex *********");
-      },
-    );
-
-    if (mounted) {
       setState(() {});
+    } else {
+      print('위치 권한이 없습니다.');
     }
   }
 
@@ -64,10 +48,18 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
       ),
       body: _isMapInitialized
           ? NaverMap(
-              options: const NaverMapViewOptions(),
-              onMapReady: (controller) {
-                print("네이버 맵 로딩됨!");
-              },
+              options: const NaverMapViewOptions(
+                mapType: NMapType.basic,
+                indoorEnable: true,
+              ), // 지도 옵션을 설정할 수 있습니다.
+              forceGesture:
+                  false, // 지도에 전달되는 제스처 이벤트의 우선순위를 가장 높게 설정할지 여부를 지정합니다.
+              onMapReady: (controller) {},
+              onMapTapped: (point, latLng) {},
+              onSymbolTapped: (symbol) {},
+              onCameraChange: (position, reason) {},
+              onCameraIdle: () {},
+              onSelectedIndoorChanged: (indoor) {},
             )
           : const Center(
               child: CircularProgressIndicator(),
