@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nugget/common/logger/logger.dart';
 
 import 'package:nugget/features/authentication/views/home_screen.dart';
-import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +15,7 @@ void main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
+
   runApp(
     ProviderScope(
       observers: [
@@ -173,7 +173,7 @@ class NuggetApp extends StatelessWidget {
 // If you do not have a themeMode switch, uncomment this line
 // to let the device system mode control the theme mode:
 
-      home: const GuardianMapScreen(),
+      home: const HomeScreen(),
     );
   }
 }

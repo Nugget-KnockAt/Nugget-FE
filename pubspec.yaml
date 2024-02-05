@@ -51,6 +51,7 @@ dependencies:
   permission_handler: ^11.2.0
   flutter_naver_map: ^1.1.2
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

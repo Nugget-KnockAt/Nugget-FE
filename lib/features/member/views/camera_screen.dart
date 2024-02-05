@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
+import 'package:nugget/features/member/views/touch_settings_screen.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});
@@ -72,6 +73,12 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     }
   }
 
+  void _onTapSettings() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return CameraSettingsScreen();
+    }));
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(userInfoViewModelProvider);
@@ -91,21 +98,22 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                   child: GestureDetector(
                     onTap: () {
                       showCupertinoDialog(
-                          context: context,
-                          builder: (context) {
-                            return CupertinoAlertDialog(
-                              title: const Text('사용자 ID'),
-                              content: Text(state.uuid),
-                              actions: [
-                                CupertinoDialogAction(
-                                  child: const Text('확인'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          });
+                        context: context,
+                        builder: (context) {
+                          return CupertinoAlertDialog(
+                            title: const Text('사용자 ID'),
+                            content: Text(state.uuid),
+                            actions: [
+                              CupertinoDialogAction(
+                                child: const Text('확인'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -119,6 +127,30 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                       child: Center(
                         child: FaIcon(
                           FontAwesomeIcons.userPlus,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 20,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: _onTapSettings,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(
+                          Sizes.size10,
+                        ),
+                      ),
+                      width: 50,
+                      height: 50,
+                      child: Center(
+                        child: FaIcon(
+                          FontAwesomeIcons.gear,
                           color:
                               Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
