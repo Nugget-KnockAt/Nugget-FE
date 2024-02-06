@@ -55,4 +55,14 @@ class UserInfoViewModel extends StateNotifier<UserInfoModel> {
   void updateEmail(String email) {
     state = state.copyWith(email: email);
   }
+
+  void clearUserInfo() {
+    state = state.copyWith(
+      uuid: '',
+      userType: UserType.member,
+      username: '',
+      phoneNumber: '',
+      email: '',
+    );
+  }
 }

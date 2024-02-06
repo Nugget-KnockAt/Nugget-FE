@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/common/constants/gaps.dart';
+import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
 import 'package:nugget/common/utils/account_validate.dart';
 import 'package:nugget/features/authentication/models/user_info_model.dart';
@@ -38,7 +39,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
         if (response.statusCode == 200) {
-          final uuid = response.data['result']['uuid'];
+          final String uuid = response.data['result']['uuid'] ?? '';
+
           final username = response.data['result']['name'];
           final email = response.data['result']['email'];
           final phoneNumber = response.data['result']['phoneNumber'];
@@ -108,34 +110,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('로그인'),
+        title: const Text('Sign In'),
       ),
       body: Form(
         key: _formKey,
-        child: Column(
-          children: [
-            Gaps.v52,
-            TextFormField(
-              keyboardType: TextInputType.emailAddress,
-              controller: _emailController,
-              validator: validateEmail,
-              decoration: const InputDecoration(
-                labelText: '이메일',
-              ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Sizes.size32,
+            vertical: Sizes.size20,
+          ),
+          child: SizedBox(
+            height: 250,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                TextFormField(
+                  keyboardType: TextInputType.emailAddress,
+                  controller: _emailController,
+                  validator: validateEmail,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    filled: false,
+                    enabledBorder: UnderlineInputBorder(),
+                    focusedBorder: UnderlineInputBorder(),
+                  ),
+                ),
+                TextFormField(
+                  obscureText: true,
+                  keyboardType: TextInputType.visiblePassword,
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                    filled: false,
+                    enabledBorder: UnderlineInputBorder(),
+                    focusedBorder: UnderlineInputBorder(),
+                  ),
+                ),
+                Gaps.v10,
+                ElevatedButton(
+                  onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(
+                      double.infinity,
+                      50,
+                    ),
+                    textStyle: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  child: const Text('로그인'),
+                ),
+              ],
             ),
-            TextFormField(
-              obscureText: true,
-              keyboardType: TextInputType.visiblePassword,
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: '비밀번호',
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _login,
-              child: const Text('로그인'),
-            ),
-          ],
+          ),
         ),
       ),
     );

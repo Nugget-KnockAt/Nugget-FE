@@ -65,19 +65,29 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         print('result: ${response.data}');
         if (response.statusCode == 200) {
           // 사용자 정보 state update
-          ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
-                uuid: response.data['result']['uuid'],
-                userType: userType,
-                username: name,
-                phoneNumber: phoneNumber,
-                email: email,
-              );
-
-          print('state에 사용자 정보 업데이트 완료');
+          String? uuid = response.data['result']['uuid'];
+          if (uuid == null) {
+            ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
+                  uuid: '',
+                  userType: userType,
+                  username: name,
+                  phoneNumber: phoneNumber,
+                  email: email,
+                );
+            print('state에 사용자 정보 업데이트 완료');
+          } else {
+            ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
+                  uuid: uuid,
+                  userType: userType,
+                  username: name,
+                  phoneNumber: phoneNumber,
+                  email: email,
+                );
+            print('state에 사용자 정보 업데이트 완료');
+          }
 
           // 회원가입이 완료되었으면 사용자 정보를 기기에 저장한다.
-          await storage.write(
-              key: USER_UUID_KEY, value: response.data['result']['uuid']);
+          await storage.write(key: USER_UUID_KEY, value: uuid);
           await storage.write(key: USERNAME_KEY, value: name);
           await storage.write(key: USER_EMAIL_KEY, value: email);
           await storage.write(key: USER_PHONE_KEY, value: phoneNumber);
@@ -115,13 +125,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text('회원가입에 실패했습니다: ${response.data['message']}')),
+                content: Text('Sign up failed: ${response.data['message']}')),
           );
         }
       } catch (e) {
         // Handle errors
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('회원가입 중 오류가 발생했습니다: ${e.toString()}')),
+          SnackBar(content: Text('Sign up failed: ${e.toString()}')),
         );
       }
     }
@@ -132,7 +143,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (validateEmail(_emailController.text) != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('이메일 형식이 올바르지 않습니다'),
+          content: Text('Email format is not valid.'),
         ),
       );
       return;
@@ -151,7 +162,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (resultBoolean == 'true') {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('사용 가능한 이메일입니다')),
+          const SnackBar(content: Text('Email is available')),
         );
 
         _isEmailAvailable = true;
@@ -160,7 +171,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('이미 사용 중인 이메일입니다'),
+          content: Text('Failed to check email duplication'),
         ),
       );
     }
@@ -176,7 +187,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('회원가입'),
+          title: const Text('Sign Up'),
         ),
         body: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -187,34 +198,61 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             child: Form(
               key: _formKey,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Gaps.v16,
-                  const Text('아이디(이메일)'),
-                  TextFormField(
-                    controller: _emailController,
-                    autocorrect: false,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      validateEmail(value);
-
-                      if (_isEmailAvailable == false) {
-                        return '이메일 중복확인을 해주세요';
-                      }
-
-                      return null;
-                    },
-                    onSaved: (newValue) {
-                      _formData['email'] = newValue!;
-                    },
-                    decoration: InputDecoration(
-                      hintText: '아이디(이메일)를 입력해주세요',
-                      suffixIcon: ElevatedButton(
-                        onPressed: _checkEmailDuplicate,
-                        child: const Text('중복확인'),
-                      ),
-                    ),
+                  Text(
+                    'Email',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const Text('비밀번호'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _emailController,
+                          autocorrect: false,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            validateEmail(value);
+
+                            if (_isEmailAvailable == false) {
+                              return 'Check email duplication first';
+                            }
+
+                            return null;
+                          },
+                          onSaved: (newValue) {
+                            _formData['email'] = newValue!;
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Enter your email address',
+                            filled: false,
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Theme.of(context).primaryColor,
+                                width: Sizes.size2,
+                              ),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Theme.of(context).primaryColor,
+                                width: Sizes.size2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: _checkEmailDuplicate,
+                        child: const Text('Check duplication'),
+                      ),
+                    ],
+                  ),
+                  Gaps.v16,
+                  Text(
+                    'Password',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   TextFormField(
                     keyboardType: TextInputType.visiblePassword,
                     obscureText: true,
@@ -223,26 +261,59 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       _formData['password'] = newValue!;
                     },
                     validator: validatePassword,
-                    decoration: const InputDecoration(
-                      hintText: '비밀번호를 입력해주세요',
+                    decoration: InputDecoration(
+                      hintText: 'Enter your password',
+                      filled: false,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
                     ),
                   ),
-                  const Text('비밀번호 확인'),
+                  Gaps.v16,
+                  Text(
+                    'Confirm Password',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   TextFormField(
                     keyboardType: TextInputType.visiblePassword,
                     obscureText: true,
                     validator: (value) {
                       if (value != _passwordController.text) {
-                        return '비밀번호가 일치하지 않습니다';
+                        return 'Passwords do not match';
                       }
                       return null;
                     },
-                    decoration: const InputDecoration(
-                      hintText: '비밀번호를 다시 입력해주세요',
+                    decoration: InputDecoration(
+                      hintText: 'Confirm your password',
+                      filled: false,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
                     ),
                   ),
                   Gaps.v16,
-                  const Text('이름'),
+                  Text(
+                    'Name',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   TextFormField(
                     keyboardType: TextInputType.name,
                     onSaved: (newValue) {
@@ -250,15 +321,32 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return '이름을 입력해주세요';
+                        return 'Enter your name';
                       }
                       return null;
                     },
-                    decoration: const InputDecoration(
-                      hintText: '이름(본명)을 입력해주세요',
+                    decoration: InputDecoration(
+                      hintText: 'Enter your name',
+                      filled: false,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
                     ),
                   ),
-                  const Text('휴대폰 번호'),
+                  Gaps.v16,
+                  Text(
+                    'Phone Number',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   TextFormField(
                     keyboardType: TextInputType.phone,
                     onSaved: (newValue) {
@@ -268,26 +356,39 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       final phoneRegExp =
                           RegExp(r'^010-?([0-9]{4})-?([0-9]{4})$');
                       if (value == null || value.isEmpty) {
-                        return '휴대폰 번호를 입력해주세요';
+                        return 'Enter your phone number';
                       }
 
                       if (!phoneRegExp.hasMatch(value)) {
-                        return '휴대폰 번호 형식이 올바르지 않습니다';
+                        return 'Invalid phone number';
                       }
 
                       return null;
                     },
-                    decoration: const InputDecoration(
-                      hintText: '휴대폰 번호를 입력해주세요',
+                    decoration: InputDecoration(
+                      hintText: 'Enter your phone number',
+                      filled: false,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).primaryColor,
+                          width: Sizes.size2,
+                        ),
+                      ),
                     ),
                   ),
                   Gaps.v16,
-                  const Text('어떤 자격이십니까?'),
+                  const Text('User Type'),
                   Row(
                     children: [
                       Expanded(
                         child: RadioListTile(
-                          title: const Text('시각 장애인'),
+                          title: const Text('Member'),
                           value: UserType.member,
                           groupValue: state.userType,
                           onChanged: (UserType? value) {
@@ -299,7 +400,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       ),
                       Expanded(
                         child: RadioListTile(
-                          title: const Text('보호자'),
+                          title: const Text('Guardian'),
                           value: UserType.guardian,
                           groupValue: state.userType,
                           onChanged: (UserType? value) {
@@ -324,7 +425,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             ),
             onPressed: _onTapSignUpButton,
             child: const Text(
-              '회원가입',
+              'Sign Up',
               style: TextStyle(
                 fontSize: Sizes.size24,
                 color: Colors.white,

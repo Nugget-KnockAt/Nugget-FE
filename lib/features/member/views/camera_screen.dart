@@ -25,6 +25,65 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   // 카메라가 초기화 되었는지 확인하는 변수
   bool _isCameraInitialized = false;
 
+  // 탭 카운트
+  int _tapCount = 0;
+
+  // 마지막 탭 시간
+  DateTime? _lastTapTime;
+
+  void _handleTap() {
+    final now = DateTime.now();
+    if (_lastTapTime == null ||
+        now.difference(_lastTapTime!) > const Duration(milliseconds: 500)) {
+      // 500ms 이상 지났으면 카운터 초기화
+      _tapCount = 0;
+    }
+
+    _tapCount++;
+    _lastTapTime = now;
+
+    if (_tapCount >= 4 && _tapCount <= 6) {
+      // 4~6번 연속 클릭 처리
+      _executeAction();
+      _tapCount = 0; // 액션 실행 후 카운트 초기화
+    }
+  }
+
+  void _executeAction() {
+    // 연속 클릭에 대한 액션 실행
+    print("$_tapCount 번 연속 클릭됨");
+
+    // 4, 5, 6번 연속 클릭에 따른 개별 액션 수행
+    switch (_tapCount) {
+      case 4:
+        _actionOnFourTaps();
+        break;
+      case 5:
+        _actionOnFiveTaps();
+        break;
+      case 6:
+        _actionOnSixTaps();
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _actionOnFourTaps() {
+    // 4번 연속 클릭시 실행할 코드
+    print("4번 연속 클릭 액션 실행");
+  }
+
+  void _actionOnFiveTaps() {
+    // 5번 연속 클릭시 실행할 코드
+    print("5번 연속 클릭 액션 실행");
+  }
+
+  void _actionOnSixTaps() {
+    // 6번 연속 클릭시 실행할 코드
+    print("6번 연속 클릭 액션 실행");
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +110,11 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
       final cameras = await availableCameras();
 
       // 후면 카메라를 사용한다.
+      if (cameras.isEmpty) {
+        print('사용 가능한 카메라가 없습니다.');
+
+        return;
+      }
       final firstCamera = cameras.first;
 
       // 카메라 컨트롤러를 초기화한다.
@@ -75,7 +139,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 
   void _onTapSettings() {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return CameraSettingsScreen();
+      return const CameraSettingsScreen();
     }));
   }
 
@@ -90,6 +154,16 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                 Positioned.fill(
                   child: CameraPreview(
                     _cameraController,
+                  ),
+                ),
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: _handleTap,
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                    ),
                   ),
                 ),
                 Positioned(
@@ -157,7 +231,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             )
           : const Center(

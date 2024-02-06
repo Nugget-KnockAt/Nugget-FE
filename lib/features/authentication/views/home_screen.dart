@@ -135,6 +135,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else {
       ref.read(locationPermissionProvider.notifier).state = false;
     }
+
+    // 위치 권한이 거부되었을 때
+    if (locationPermission.isDenied || locationPermission.isPermanentlyDenied) {
+      // 알림창 띄움.
+      await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('Nugget앱을 사용하기 위해선 위치 권한이 반드시 필요합니다.'),
+            content: const Text('위치 권한을 허용해주세요.'),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text('확인'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   // access token, refresh token이 있는지 확인하는 함수
@@ -173,6 +195,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final UserType userType =
           ref.read(userInfoViewModelProvider.notifier).state.userType;
 
+      print('userType: $userType');
+
       // 사용자의 타입이 member이면 카메라 화면으로 이동
       if (userType == UserType.member) {
         // 회원 계정으로 로그인한 경우
@@ -204,37 +228,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final Dio dio = Dio();
 
-  void onTapGuardian() {
-    showModalBottomSheet(
-      constraints: const BoxConstraints(
-        minHeight: 200,
-        maxHeight: 400,
-      ),
-      backgroundColor: Colors.transparent,
-      context: context,
-      builder: (context) {
-        return Container(
-          height: 200,
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.size32),
-            color: Colors.white,
-          ),
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('로그인'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext contex) {
     return Scaffold(
@@ -251,40 +244,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               left: 0,
               right: 0,
               child: SizedBox(
+                height: 200,
                 width: MediaQuery.of(context).size.width,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoginScreen()));
-                      },
-                      child: const Text('로그인'),
-                    ),
-                    Gaps.v16,
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignUpScreen()));
-                      },
-                      child: const Text('회원가입'),
-                    ),
-                    GestureDetector(
-                      onTap: onTapGuardian,
-                      child: Text(
-                        '보호자 계정으로 로그인하기',
-                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                              color: Colors.black87,
-                              decoration: TextDecoration.underline,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Sizes.size40,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginScreen()));
+                        },
+                        style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(
+                              double.infinity,
+                              50,
                             ),
+                            textStyle: Theme.of(context).textTheme.bodyLarge),
+                        child: const Text('Sign In'),
                       ),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const SignUpScreen()));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.background,
+                          minimumSize: const Size(
+                            double.infinity,
+                            50,
+                          ),
+                          textStyle: Theme.of(context)
+                              .textTheme
+                              .bodyLarge, // 너비를 최대로, 높이는 50으로 설정
+                        ),
+                        child: const Text('Sign Up'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
