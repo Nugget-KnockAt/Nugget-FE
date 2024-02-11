@@ -17,6 +17,7 @@ class UserInfoViewModel extends StateNotifier<UserInfoModel> {
             username: '',
             phoneNumber: '',
             email: '',
+            connectionList: [],
           ),
         );
 
@@ -30,6 +31,7 @@ class UserInfoViewModel extends StateNotifier<UserInfoModel> {
     required String username,
     required String phoneNumber,
     required String email,
+    required List<String> connectionList,
   }) {
     state = state.copyWith(
       uuid: uuid,
@@ -37,6 +39,7 @@ class UserInfoViewModel extends StateNotifier<UserInfoModel> {
       username: username,
       phoneNumber: phoneNumber,
       email: email,
+      connectionList: connectionList,
     );
   }
 
@@ -54,6 +57,10 @@ class UserInfoViewModel extends StateNotifier<UserInfoModel> {
 
   void updateEmail(String email) {
     state = state.copyWith(email: email);
+  }
+
+  void updateConnectionList(List<String> connectionList) {
+    state = state.copyWith(connectionList: connectionList);
   }
 
   void clearUserInfo() {

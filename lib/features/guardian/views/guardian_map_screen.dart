@@ -7,6 +7,7 @@ import 'package:nugget/common/data/data.dart';
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:nugget/features/authentication/views/home_screen.dart';
+import 'package:nugget/features/guardian/views/events_list_screen.dart';
 import 'package:nugget/features/guardian/views/member_list_screen.dart';
 
 class GuardianMapScreen extends ConsumerStatefulWidget {
@@ -71,6 +72,8 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
               ref.read(userInfoViewModelProvider.notifier).clearUserInfo();
               await storage.delete(key: ACCESS_TOKEN_KEY);
               await storage.delete(key: REFRESH_TOKEN_KEY);
+
+              if (!mounted) return;
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -126,8 +129,24 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
                     topRight: Radius.circular(Sizes.size20),
                   ),
                 ),
-                child: MemberListScreen(
-                    scrollController), // Your content widget here
+                child: Navigator(
+                  onGenerateRoute: (settings) {
+                    if (settings.name == '/') {
+                      return MaterialPageRoute(
+                        builder: (smallContext) => MemberListScreen(
+                          scrollController: scrollController,
+                          mainScreenContext: context,
+                        ),
+                      );
+                    } else if (settings.name == '/events') {
+                      return MaterialPageRoute(
+                        builder: (context) => const EventsListScreen(),
+                      );
+                    }
+                    assert(false, 'Need to implement ${settings.name}');
+                    return null;
+                  },
+                ),
               );
             },
           ),

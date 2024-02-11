@@ -9,6 +9,7 @@ class UserInfoModel {
   String username;
   String phoneNumber;
   String email;
+  List<String> connectionList;
 
   UserInfoModel({
     required this.uuid,
@@ -16,6 +17,7 @@ class UserInfoModel {
     required this.username,
     required this.phoneNumber,
     required this.email,
+    required this.connectionList,
   });
 
   UserInfoModel copyWith({
@@ -24,6 +26,7 @@ class UserInfoModel {
     String? username,
     String? phoneNumber,
     String? email,
+    List<String>? connectionList,
   }) {
     return UserInfoModel(
       uuid: uuid ?? this.uuid,
@@ -31,6 +34,20 @@ class UserInfoModel {
       username: username ?? this.username,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       email: email ?? this.email,
+      connectionList: connectionList ?? this.connectionList,
+    );
+  }
+
+  factory UserInfoModel.fromJson(Map<String, dynamic> json) {
+    return UserInfoModel(
+      uuid: json['uuid'] ?? '',
+      userType:
+          json['role'] == 'ROLE_MEMBER' ? UserType.member : UserType.guardian,
+      username: json['name'],
+      phoneNumber: json['phoneNumber'],
+      email: json['email'],
+      connectionList:
+          List<String>.from(json['connectionList'].map((x) => x.toString())),
     );
   }
 }

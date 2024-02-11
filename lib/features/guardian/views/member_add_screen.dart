@@ -50,17 +50,18 @@ class MemberAddScreen extends ConsumerWidget {
               Gaps.v32,
               Center(
                 child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(
-                        double.infinity,
-                        50,
-                      ),
-                      textStyle: Theme.of(context).textTheme.bodyLarge,
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(
+                      double.infinity,
+                      50,
                     ),
-                    child: const Text(
-                      'Connect',
-                    )),
+                    textStyle: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  child: const Text(
+                    'Connect',
+                  ),
+                ),
               ),
             ],
           ),

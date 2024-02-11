@@ -5,6 +5,7 @@ import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
 import 'package:nugget/common/utils/account_validate.dart';
+import 'package:nugget/common/utils/convert_between_string_liststring.dart';
 import 'package:nugget/features/authentication/models/user_info_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
@@ -41,23 +42,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       _formKey.currentState!.save();
       print(_formData);
 
-      final String email = _formData['email'].toString();
-      final String password = _formData['password'].toString();
-      final String name = _formData['name'].toString();
-      final String phoneNumber = _formData['phone'].toString();
-      final UserType userType = ref.read(userInfoViewModelProvider).userType;
-
       // Perform the POST request to sign up
       try {
         final response = await _dio.post(
           '$commonUrl/member/signUp',
           data: {
-            'email': email,
-            'password': password,
-            'name': name,
-            'phoneNumber': phoneNumber,
+            'email': _formData['email'].toString(),
+            'password': _formData['password'].toString(),
+            'name': _formData['name'].toString(),
+            'phoneNumber': _formData['phone'].toString(),
             'role':
-                userType == UserType.member ? 'ROLE_MEMBER' : 'ROLE_GUARDIAN',
+                ref.read(userInfoViewModelProvider).userType == UserType.member
+                    ? 'ROLE_MEMBER'
+                    : 'ROLE_GUARDIAN',
           },
         );
 
@@ -65,37 +62,29 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         print('result: ${response.data}');
         if (response.statusCode == 200) {
           // 사용자 정보 state update
-          String? uuid = response.data['result']['uuid'];
-          if (uuid == null) {
-            ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
-                  uuid: '',
-                  userType: userType,
-                  username: name,
-                  phoneNumber: phoneNumber,
-                  email: email,
-                );
-            print('state에 사용자 정보 업데이트 완료');
-          } else {
-            ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
-                  uuid: uuid,
-                  userType: userType,
-                  username: name,
-                  phoneNumber: phoneNumber,
-                  email: email,
-                );
-            print('state에 사용자 정보 업데이트 완료');
-          }
+          final userInfo = UserInfoModel.fromJson(response.data['result']);
 
+          ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
+                uuid: userInfo.uuid,
+                username: userInfo.username,
+                email: userInfo.email,
+                phoneNumber: userInfo.phoneNumber,
+                userType: userInfo.userType,
+                connectionList: userInfo.connectionList,
+              );
           // 회원가입이 완료되었으면 사용자 정보를 기기에 저장한다.
-          await storage.write(key: USER_UUID_KEY, value: uuid);
-          await storage.write(key: USERNAME_KEY, value: name);
-          await storage.write(key: USER_EMAIL_KEY, value: email);
-          await storage.write(key: USER_PHONE_KEY, value: phoneNumber);
+          await storage.write(key: USER_UUID_KEY, value: userInfo.uuid);
+          await storage.write(key: USERNAME_KEY, value: userInfo.username);
+          await storage.write(key: USER_EMAIL_KEY, value: userInfo.email);
+          await storage.write(key: USER_PHONE_KEY, value: userInfo.phoneNumber);
           await storage.write(
             key: USER_TYPE_KEY,
-            value: userType.toString(),
+            value: userInfo.userType.toString(),
           );
-
+          await storage.write(
+            key: CONNECTION_LIST_KEY,
+            value: listStringToString(userInfo.connectionList),
+          );
           // 회원가입이 완료되었으면 사용자의 토큰을 기기에 저장한다.
           await storage.write(
               key: ACCESS_TOKEN_KEY,
@@ -103,29 +92,22 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           await storage.write(
               key: REFRESH_TOKEN_KEY,
               value: response.data['result']['refreshToken']);
+        }
 
-          // 회원가입이 완료되었으면 사용자의 타입 (member, guardian)에 따라 다른 화면으로 이동한다.
-          if (ref.read(userInfoViewModelProvider).userType == UserType.member) {
-            if (!mounted) return;
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const CameraScreen()),
-              (route) => false,
-            );
-          } else {
-            if (!mounted) return;
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const GuardianMapScreen()),
-              (route) => false,
-            );
-          }
+        // 회원가입이 완료되었으면 사용자의 타입 (member, guardian)에 따라 다른 화면으로 이동한다.
+        if (ref.read(userInfoViewModelProvider).userType == UserType.member) {
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const CameraScreen()),
+            (route) => false,
+          );
         } else {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Sign up failed: ${response.data['message']}')),
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const GuardianMapScreen()),
+            (route) => false,
           );
         }
       } catch (e) {

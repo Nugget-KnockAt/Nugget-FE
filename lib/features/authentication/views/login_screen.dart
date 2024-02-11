@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,14 +41,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
         if (response.statusCode == 200) {
-          final String uuid = response.data['result']['uuid'] ?? '';
-
-          final username = response.data['result']['name'];
-          final email = response.data['result']['email'];
-          final phoneNumber = response.data['result']['phoneNumber'];
-          final userType = response.data['result']['role'] == 'ROLE_MEMBER'
-              ? UserType.member
-              : UserType.guardian;
+          final userInfo = UserInfoModel.fromJson(response.data['result']);
 
           // 로그인이 성공하면 사용자의 토큰 정보를 기기에 저장한다.
           await storage.write(
@@ -57,23 +52,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               value: response.data['result']['refreshToken']);
 
           // 로그인이 성공하면 사용자의 정보를 기기에 저장한다.
-          await storage.write(key: USER_UUID_KEY, value: uuid);
-          await storage.write(key: USERNAME_KEY, value: username);
-          await storage.write(key: USER_EMAIL_KEY, value: email);
-          await storage.write(key: USER_PHONE_KEY, value: phoneNumber);
-          await storage.write(key: USER_TYPE_KEY, value: userType.toString());
+          await storage.write(key: USER_UUID_KEY, value: userInfo.uuid);
+          await storage.write(key: USERNAME_KEY, value: userInfo.username);
+          await storage.write(key: USER_EMAIL_KEY, value: userInfo.email);
+          await storage.write(key: USER_PHONE_KEY, value: userInfo.phoneNumber);
+          await storage.write(
+              key: USER_TYPE_KEY, value: userInfo.userType.toString());
+          await storage.write(
+            key: CONNECTION_LIST_KEY,
+            value: jsonEncode(userInfo.connectionList),
+          );
 
           // 사용자의 상태를 업데이트한다.
           ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
-                uuid: uuid,
-                userType: userType,
-                username: username,
-                phoneNumber: phoneNumber,
+                uuid: userInfo.uuid,
+                userType: userInfo.userType,
+                username: userInfo.username,
+                phoneNumber: userInfo.phoneNumber,
                 email: email,
+                connectionList: userInfo.connectionList,
               );
 
           // 사용자의 타입에 따라 다른 화면으로 이동한다.
-          if (userType == UserType.member) {
+          if (userInfo.userType == UserType.member) {
+            if (!mounted) return;
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
@@ -82,6 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               (route) => false,
             );
           } else {
+            if (!mounted) return;
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
@@ -93,6 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           // Navigate or do something else
         } else {
           // Handle non-successful response
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to sign up')),
           );

@@ -13,177 +13,194 @@ class CameraSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
-  final GlobalKey<_TouchSettingMessageState> threeTouchKey = GlobalKey();
-  final GlobalKey<_TouchSettingMessageState> fourTouchKey = GlobalKey();
-  final GlobalKey<_TouchSettingMessageState> fiveTouchKey = GlobalKey();
-  final GlobalKey<_TouchSettingMessageState> sixTouchKey = GlobalKey();
-
-  Future<void> _loadSettings() {
-    final viewModel = ref.read(touchSettingsViewModelProvider.notifier);
-    return viewModel.loadSettings();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _loadSettings(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text('Touch Settings'),
-              ),
-              body: Center(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TouchSettingMessage(
-                        key: threeTouchKey,
-                        message: '3 Touches',
-                        state: ref
-                                .read(touchSettingsViewModelProvider.notifier)
-                                .state
-                                .threeTouches ??
-                            '',
-                      ),
-                      Gaps.v16,
-                      TouchSettingMessage(
-                        key: fourTouchKey,
-                        message: '4 Touches',
-                        state: ref
-                                .read(touchSettingsViewModelProvider.notifier)
-                                .state
-                                .fourTouches ??
-                            '',
-                      ),
-                      Gaps.v16,
-                      TouchSettingMessage(
-                        key: fiveTouchKey,
-                        message: '5 Touches',
-                        state: ref
-                                .read(touchSettingsViewModelProvider.notifier)
-                                .state
-                                .fiveTouches ??
-                            '',
-                      ),
-                      Gaps.v16,
-                      TouchSettingMessage(
-                        key: sixTouchKey,
-                        message: '6 Touches',
-                        state: ref
-                                .read(touchSettingsViewModelProvider.notifier)
-                                .state
-                                .sixTouches ??
-                            '',
-                      ),
-                      Gaps.v32,
-                      ElevatedButton(
-                        onPressed: () {
-                          final viewModel =
-                              ref.read(touchSettingsViewModelProvider.notifier);
-                          viewModel.updateThreeTouches(
-                              threeTouchKey.currentState?.currentText ?? '');
-                          viewModel.updateFourTouches(
-                              fourTouchKey.currentState?.currentText ?? '');
-                          viewModel.updateFiveTouches(
-                              fiveTouchKey.currentState?.currentText ?? '');
-                          viewModel.updateSixTouches(
-                              sixTouchKey.currentState?.currentText ?? '');
-                          viewModel.saveAllSettings();
-                          print('Settings Saved');
-                        },
-                        child: const Text('Save'),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        } else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+    final doubleTapSettingState = ref.watch(doubleTapSettingProvider);
+
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
       },
-    );
-  }
-}
-
-class TouchSettingMessage extends ConsumerStatefulWidget {
-  const TouchSettingMessage({
-    super.key,
-    required this.message,
-    required this.state,
-  });
-
-  final String message;
-  final String state;
-
-  @override
-  ConsumerState<TouchSettingMessage> createState() =>
-      _TouchSettingMessageState();
-}
-
-class _TouchSettingMessageState extends ConsumerState<TouchSettingMessage> {
-  final TextEditingController _controller = TextEditingController();
-
-  String get currentText => _controller.text;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller.text = widget.state;
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          widget.message,
-          style: Theme.of(context).textTheme.titleLarge,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Touch Settings'),
         ),
-        Gaps.h16,
-        Expanded(
-          child: TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              filled: false,
-              hintText: 'Enter your message',
-              labelStyle: Theme.of(context).textTheme.labelLarge,
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
+        body: Center(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Double Tap',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Gaps.h16,
+                    Expanded(
+                      child: TextField(
+                        controller: TextEditingController(
+                          text: doubleTapSettingState.when(
+                            data: (doubleTapSettingModel) =>
+                                doubleTapSettingModel.text,
+                            loading: () => 'loading...',
+                            error: (error, stackTrace) => '',
+                          ),
+                        ),
+                        decoration: InputDecoration(
+                          filled: false,
+                          hintText: 'Enter your message',
+                          labelStyle: Theme.of(context).textTheme.labelLarge,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: Sizes.size10,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
+                Gaps.v16,
+                Row(
+                  children: [
+                    Text(
+                      'Long Press',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Gaps.h16,
+                    Expanded(
+                      child: TextField(
+                        controller: TextEditingController(
+                          text: doubleTapSettingState.when(
+                            data: (doubleTapSettingModel) =>
+                                doubleTapSettingModel.text,
+                            loading: () => 'loading...',
+                            error: (error, stackTrace) => '',
+                          ),
+                        ),
+                        decoration: InputDecoration(
+                          filled: false,
+                          hintText: 'Enter your message',
+                          labelStyle: Theme.of(context).textTheme.labelLarge,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: Sizes.size10,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: Sizes.size10,
-              ),
+                Gaps.v16,
+                Row(
+                  children: [
+                    Text(
+                      'Drag Up',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Gaps.h16,
+                    Expanded(
+                      child: TextField(
+                        controller: TextEditingController(
+                          text: doubleTapSettingState.when(
+                            data: (doubleTapSettingModel) =>
+                                doubleTapSettingModel.text,
+                            loading: () => 'loading...',
+                            error: (error, stackTrace) => '',
+                          ),
+                        ),
+                        decoration: InputDecoration(
+                          filled: false,
+                          hintText: 'Enter your message',
+                          labelStyle: Theme.of(context).textTheme.labelLarge,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: Sizes.size10,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                Gaps.v16,
+                Row(
+                  children: [
+                    Text(
+                      'Drag Down',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Gaps.h16,
+                    Expanded(
+                      child: TextField(
+                        controller: TextEditingController(
+                          text: doubleTapSettingState.when(
+                            data: (doubleTapSettingModel) =>
+                                doubleTapSettingModel.text,
+                            loading: () => 'loading...',
+                            error: (error, stackTrace) => '',
+                          ),
+                        ),
+                        decoration: InputDecoration(
+                          filled: false,
+                          hintText: 'Enter your message',
+                          labelStyle: Theme.of(context).textTheme.labelLarge,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: Sizes.size10,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    print('Settings Saved');
+                  },
+                  child: const Text('Save'),
+                )
+              ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -10,5 +10,6 @@ const USER_EMAIL_KEY = 'USER_EMAIL';
 const USER_PHONE_KEY = 'USER_PHONE';
 const USERNAME_KEY = 'USER_NAME';
 const USER_TYPE_KEY = 'USER_TYPE';
+const CONNECTION_LIST_KEY = 'CONNECTION_LIST';
 
 const storage = FlutterSecureStorage();

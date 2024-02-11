@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -8,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
+import 'package:nugget/common/utils/convert_between_string_liststring.dart';
 import 'package:nugget/features/authentication/models/user_info_model.dart';
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
@@ -44,11 +47,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // 기기에 저장되어 있는 사용자의 정보를 가져오는 함수
   Future<void> _loadUserInfo() async {
     // 저장되어 있는 사용자 정보를 불러온다.
+
     final uuidStr = await storage.read(key: USER_UUID_KEY);
     final usernameStr = await storage.read(key: USERNAME_KEY);
     final emailStr = await storage.read(key: USER_EMAIL_KEY);
     final phoneNumberStr = await storage.read(key: USER_PHONE_KEY);
     final userTypeStr = await storage.read(key: USER_TYPE_KEY);
+    final connectionListStr = await storage.read(key: CONNECTION_LIST_KEY);
 
     // 저장되어 있는 userTypeStr을 UserType으로 변환
     // 저장되어 있는 값이 없으면 null
@@ -64,12 +69,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         phoneNumberStr != null &&
         userType != null) {
       // 사용자 정보를 업데이트한다.
+      List<String> connectionList = stringToListString(connectionListStr);
+
       ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
             uuid: uuidStr,
             userType: userType,
             username: usernameStr,
             phoneNumber: phoneNumberStr,
             email: emailStr,
+            connectionList: connectionList,
           );
 
       print('This is loadUserInfo function');
@@ -139,6 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // 위치 권한이 거부되었을 때
     if (locationPermission.isDenied || locationPermission.isPermanentlyDenied) {
       // 알림창 띄움.
+      if (!mounted) return;
       await showCupertinoDialog(
         context: context,
         builder: (context) {

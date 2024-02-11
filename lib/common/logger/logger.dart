@@ -5,22 +5,22 @@ class Logger extends ProviderObserver {
   @override
   void didUpdateProvider(ProviderBase<Object?> provider, Object? previousValue,
       Object? newValue, ProviderContainer container) {
-    print('''
-    [Provider Updated]
-    Provider: $provider
-    Previous: $previousValue
-    New: $newValue
-    ''');
+    // print('''
+    // [Provider Updated]
+    // Provider: $provider
+    // Previous: $previousValue
+    // New: $newValue
+    // ''');
   }
 
   @override
   void didAddProvider(ProviderBase<Object?> provider, Object? value,
       ProviderContainer container) {
-    print('''
-    [New Provider Added]
-    Provider: $provider
-    Value: $value
-    ''');
+    // print('''
+    // [New Provider Added]
+    // Provider: $provider
+    // Value: $value
+    // ''');
   }
 
   @override
