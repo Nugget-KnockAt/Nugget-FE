@@ -15,7 +15,12 @@ class CameraSettingsScreen extends ConsumerStatefulWidget {
 class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
   @override
   Widget build(BuildContext context) {
+    final textBoxWidth = MediaQuery.of(context).size.width * 0.25;
+
     final doubleTapSettingState = ref.watch(doubleTapSettingProvider);
+    final longPressSettingState = ref.watch(longPressSettingProvider);
+    final dragUpSettingState = ref.watch(dragUpSettingProvider);
+    final dragDownSettingState = ref.watch(dragDownSettingProvider);
 
     return GestureDetector(
       onTap: () {
@@ -33,17 +38,19 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'Double Tap',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    SizedBox(
+                      width: textBoxWidth,
+                      child: Text(
+                        'Double Tap',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     Gaps.h16,
                     Expanded(
                       child: TextField(
                         controller: TextEditingController(
                           text: doubleTapSettingState.when(
-                            data: (doubleTapSettingModel) =>
-                                doubleTapSettingModel.text,
+                            data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
@@ -73,17 +80,19 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                 Gaps.v16,
                 Row(
                   children: [
-                    Text(
-                      'Long Press',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    SizedBox(
+                      width: textBoxWidth,
+                      child: Text(
+                        'Long Press',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     Gaps.h16,
                     Expanded(
                       child: TextField(
                         controller: TextEditingController(
-                          text: doubleTapSettingState.when(
-                            data: (doubleTapSettingModel) =>
-                                doubleTapSettingModel.text,
+                          text: longPressSettingState.when(
+                            data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
@@ -113,17 +122,19 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                 Gaps.v16,
                 Row(
                   children: [
-                    Text(
-                      'Drag Up',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    SizedBox(
+                      width: textBoxWidth,
+                      child: Text(
+                        'Drag Up',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     Gaps.h16,
                     Expanded(
                       child: TextField(
                         controller: TextEditingController(
-                          text: doubleTapSettingState.when(
-                            data: (doubleTapSettingModel) =>
-                                doubleTapSettingModel.text,
+                          text: dragUpSettingState.when(
+                            data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
@@ -153,17 +164,19 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                 Gaps.v16,
                 Row(
                   children: [
-                    Text(
-                      'Drag Down',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    SizedBox(
+                      width: textBoxWidth,
+                      child: Text(
+                        'Drag Down',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     Gaps.h16,
                     Expanded(
                       child: TextField(
                         controller: TextEditingController(
-                          text: doubleTapSettingState.when(
-                            data: (doubleTapSettingModel) =>
-                                doubleTapSettingModel.text,
+                          text: dragDownSettingState.when(
+                            data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
@@ -190,6 +203,7 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                     )
                   ],
                 ),
+                Gaps.v32,
                 ElevatedButton(
                   onPressed: () {
                     print('Settings Saved');
