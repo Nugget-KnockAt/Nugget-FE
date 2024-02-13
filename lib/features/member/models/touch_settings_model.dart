@@ -1,3 +1,37 @@
+class TouchSettingsModel {
+  TouchSettingsModel({
+    required this.doubleTap,
+    required this.longPress,
+    required this.dragUp,
+    required this.dragDown,
+  });
+
+  final DoubleTapSettingModel doubleTap;
+  final LongPressSettingModel longPress;
+  final DragUpSettingModel dragUp;
+  final DragDownSettingModel dragDown;
+
+  TouchSettingsModel copyWith({
+    DoubleTapSettingModel? doubleTap,
+    LongPressSettingModel? longPress,
+    DragUpSettingModel? dragUp,
+    DragDownSettingModel? dragDown,
+  }) {
+    return TouchSettingsModel(
+      doubleTap: doubleTap ?? this.doubleTap,
+      longPress: longPress ?? this.longPress,
+      dragUp: dragUp ?? this.dragUp,
+      dragDown: dragDown ?? this.dragDown,
+    );
+  }
+
+  TouchSettingsModel.fromJson(Map<String, dynamic> json)
+      : doubleTap = DoubleTapSettingModel.fromJson(json['doubleTap'] ?? {}),
+        longPress = LongPressSettingModel.fromJson(json['longPress'] ?? {}),
+        dragUp = DragUpSettingModel.fromJson(json['dragUp'] ?? {}),
+        dragDown = DragDownSettingModel.fromJson(json['dragDown'] ?? {});
+}
+
 class DoubleTapSettingModel {
   DoubleTapSettingModel({
     required this.text,

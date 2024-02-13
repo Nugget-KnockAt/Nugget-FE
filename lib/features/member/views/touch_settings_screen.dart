@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
+import 'package:nugget/features/member/models/touch_settings_model.dart';
 import 'package:nugget/features/member/view_models/touch_settings_view_model.dart';
 
 class CameraSettingsScreen extends ConsumerStatefulWidget {
@@ -13,6 +14,23 @@ class CameraSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
+  final TextEditingController _doubleTapController = TextEditingController();
+  final TextEditingController _longPressController = TextEditingController();
+  final TextEditingController _dragUpController = TextEditingController();
+  final TextEditingController _dragDownController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _doubleTapController.addListener(() {
+      print('Double Tap: ${_doubleTapController.text}');
+    });
+    _longPressController.addListener(() {
+      print('Long Press: ${_longPressController.text}');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final textBoxWidth = MediaQuery.of(context).size.width * 0.25;
@@ -48,13 +66,12 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                     Gaps.h16,
                     Expanded(
                       child: TextField(
-                        controller: TextEditingController(
-                          text: doubleTapSettingState.when(
+                        controller: _doubleTapController
+                          ..text = doubleTapSettingState.when(
                             data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
-                        ),
                         decoration: InputDecoration(
                           filled: false,
                           hintText: 'Enter your message',
@@ -90,13 +107,12 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                     Gaps.h16,
                     Expanded(
                       child: TextField(
-                        controller: TextEditingController(
-                          text: longPressSettingState.when(
+                        controller: _longPressController
+                          ..text = longPressSettingState.when(
                             data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
-                        ),
                         decoration: InputDecoration(
                           filled: false,
                           hintText: 'Enter your message',
@@ -132,13 +148,12 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                     Gaps.h16,
                     Expanded(
                       child: TextField(
-                        controller: TextEditingController(
-                          text: dragUpSettingState.when(
+                        controller: _dragUpController
+                          ..text = dragUpSettingState.when(
                             data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
-                        ),
                         decoration: InputDecoration(
                           filled: false,
                           hintText: 'Enter your message',
@@ -174,13 +189,12 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                     Gaps.h16,
                     Expanded(
                       child: TextField(
-                        controller: TextEditingController(
-                          text: dragDownSettingState.when(
+                        controller: _dragDownController
+                          ..text = dragDownSettingState.when(
                             data: (data) => data.text,
                             loading: () => 'loading...',
                             error: (error, stackTrace) => '',
                           ),
-                        ),
                         decoration: InputDecoration(
                           filled: false,
                           hintText: 'Enter your message',
@@ -205,8 +219,31 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                 ),
                 Gaps.v32,
                 ElevatedButton(
-                  onPressed: () {
-                    print('Settings Saved');
+                  onPressed: () async {
+                    // 데이터 저정
+                    await ref
+                        .read(touchSettingsNotifierProvider.notifier)
+                        .saveDoubleTapSetting(
+                          _doubleTapController.text,
+                        );
+
+                    await ref
+                        .read(touchSettingsNotifierProvider.notifier)
+                        .saveLongPressSetting(
+                          _longPressController.text,
+                        );
+
+                    await ref
+                        .read(touchSettingsNotifierProvider.notifier)
+                        .saveDragUpSetting(
+                          _dragUpController.text,
+                        );
+
+                    await ref
+                        .read(touchSettingsNotifierProvider.notifier)
+                        .saveDragDownSetting(
+                          _dragDownController.text,
+                        );
                   },
                   child: const Text('Save'),
                 )
