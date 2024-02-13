@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
@@ -20,7 +21,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   late CameraController _cameraController;
 
   // 플래쉬 상태
-  late final FlashMode _flashMode;
+  FlashMode _flashMode = FlashMode.off;
 
   // 카메라가 초기화 되었는지 확인하는 변수
   bool _isCameraInitialized = false;
@@ -66,7 +67,6 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 
       // 카메라 컨트롤러 시작.
       await _cameraController.initialize();
-      _flashMode = _cameraController.value.flashMode;
 
       // 카메라 컨트롤러가 초기화되면 화면을 갱신한다.
       _isCameraInitialized = true;
@@ -76,6 +76,18 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     } else {
       print('카메라 권한이 없습니다.');
     }
+  }
+
+  Future<void> _onTapFlash() async {
+    if (_flashMode == FlashMode.off) {
+      await _cameraController.setFlashMode(FlashMode.torch);
+      _flashMode = FlashMode.torch;
+    } else {
+      await _cameraController.setFlashMode(FlashMode.off);
+      _flashMode = FlashMode.off;
+    }
+
+    setState(() {});
   }
 
   void _onTapSettings() {
@@ -161,25 +173,56 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 20,
                   right: 20,
-                  child: GestureDetector(
-                    onTap: _onTapSettings,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          Sizes.size10,
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _onTapSettings,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(
+                              Sizes.size10,
+                            ),
+                          ),
+                          width: 50,
+                          height: 50,
+                          child: Center(
+                            child: FaIcon(
+                              FontAwesomeIcons.gear,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                            ),
+                          ),
                         ),
                       ),
-                      width: 50,
-                      height: 50,
-                      child: Center(
-                        child: FaIcon(
-                          FontAwesomeIcons.gear,
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
+                      Gaps.v16,
+                      GestureDetector(
+                        onTap: _onTapFlash,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(
+                              Sizes.size10,
+                            ),
+                          ),
+                          width: 50,
+                          height: 50,
+                          child: Center(
+                            child: FaIcon(
+                              _flashMode == FlashMode.off
+                                  ? FontAwesomeIcons.bolt
+                                  : FontAwesomeIcons.solidLightbulb,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
