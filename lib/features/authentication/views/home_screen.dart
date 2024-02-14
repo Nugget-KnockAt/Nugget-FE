@@ -91,6 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           'phoneNumberStr: ${ref.read(userInfoViewModelProvider.notifier).state.phoneNumber}');
       print(
           'userType: ${ref.read(userInfoViewModelProvider.notifier).state.userType}');
+      print(
+          'connectionList: ${ref.read(userInfoViewModelProvider.notifier).state.connectionList}');
     } else {
       // 사용자 정보가 없으면 로그인 화면으로 이동한다.
       print('사용자 정보가 없습니다.');
@@ -103,6 +105,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final cameraPermission = await Permission.camera.request();
     final microphonePermission = await Permission.microphone.request();
     final locationPermission = await Permission.location.request();
+    final notiPermission = await Permission.notification.request();
 
     final cameraDenied =
         cameraPermission.isDenied || cameraPermission.isPermanentlyDenied;
@@ -165,6 +168,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         },
       );
+    }
+
+    // 알림 권한이 허용되었는지 확인
+    if (notiPermission.isGranted) {
+      ref.read(notiPermissionProvider.notifier).state = true;
+    } else {
+      ref.read(notiPermissionProvider.notifier).state = false;
     }
   }
 

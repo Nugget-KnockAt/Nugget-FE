@@ -40,6 +40,12 @@
 	<string>microphone</string>
 	<key>PermissionGroupNotification</key>
 	<string>notification</string>
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>fetch</string>
+    <string>remote-notification</string>
+  </array>
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

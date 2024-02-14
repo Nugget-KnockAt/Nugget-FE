@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
+import 'package:nugget/common/data/data.dart';
+import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
+import 'package:nugget/features/authentication/views/home_screen.dart';
 
 import 'package:nugget/features/member/view_models/touch_settings_view_model.dart';
 
@@ -45,6 +48,7 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: const Text('Touch Settings'),
         ),
@@ -59,7 +63,21 @@ class _CameraSettingsScreenState extends ConsumerState<CameraSettingsScreen> {
                 left: 0,
                 right: 0,
                 child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // 로그아웃
+                      storage.delete(key: ACCESS_TOKEN_KEY);
+                      storage.delete(key: REFRESH_TOKEN_KEY);
+                      ref
+                          .read(userInfoViewModelProvider.notifier)
+                          .clearUserInfo();
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const HomeScreen()),
+                        (route) => false,
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(
                         double.infinity,

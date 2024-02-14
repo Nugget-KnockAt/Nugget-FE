@@ -8,3 +8,7 @@ final cameraPermissionProvider = StateProvider<bool>((ref) {
 final locationPermissionProvider = StateProvider<bool>((ref) {
   return false;
 });
+
+final notiPermissionProvider = StateProvider<bool>((ref) {
+  return false;
+});

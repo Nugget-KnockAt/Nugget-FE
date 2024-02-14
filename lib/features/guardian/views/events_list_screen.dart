@@ -1,29 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
+import 'package:nugget/features/guardian/models/user_detail_model.dart';
+import 'package:nugget/features/guardian/view_models/event_view_model.dart';
 
-class EventsListScreen extends ConsumerWidget {
-  const EventsListScreen({super.key});
+class EventsListScreen extends ConsumerStatefulWidget {
+  const EventsListScreen({
+    super.key,
+    required this.memberEmail,
+    required this.scrollController,
+  });
+
+  final String memberEmail;
+  final ScrollController scrollController;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _EventsListScreenState();
+}
+
+class _EventsListScreenState extends ConsumerState<EventsListScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    ref.read(eventViewModelProvider.notifier).fetchEvents(widget.memberEmail);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final eventsState = ref.watch(eventViewModelProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Events List'),
       ),
-      body: ListView.builder(
-        itemCount: 10, // 여기서 목록의 항목 수를 설정하세요.
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(
-            title: Text('Event $index'),
-            onTap: () {
-              // 클릭하면 해당 사용자의 일주일 동안의 이벤트를 받는 api 호출.
-            },
-            onLongPress: () {
-              // 길게 누르면 삭제함.
-            },
-          );
-        },
-      ),
+      body: eventsState.isNotEmpty
+          ? ListView.builder(
+              controller: widget.scrollController,
+              itemCount: eventsState.length,
+              itemBuilder: (context, index) {
+                final event = eventsState[index];
+                return ListTile(
+                  title: Text(event.memberEmail),
+                  subtitle: Text(event.locationInfo),
+                  // 기타 필요한 UI 요소 추가
+                );
+              },
+            )
+          : const ListTile(
+              title: Text('No events'),
+            ),
     );
   }
 }

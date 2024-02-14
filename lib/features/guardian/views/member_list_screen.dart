@@ -71,12 +71,14 @@ class MemberListScreen extends ConsumerWidget {
       body: userDetailsAsyncValue.when(
         data: (userDetails) {
           return ListView(
+            controller: scrollController,
             children: userDetails.map((detail) {
               // Ensure each item is a Widget, like ListTile
               return ListTile(
                 onTap: () {
                   // Do something when the ListTile is tapped
-                  Navigator.pushNamed(context, '/events');
+                  Navigator.pushNamed(context, '/events',
+                      arguments: detail.email);
                 },
                 title: Text(
                   detail.name,

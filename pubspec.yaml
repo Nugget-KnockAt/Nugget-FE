@@ -44,14 +44,14 @@ dependencies:
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
   dio: ^5.4.0
-  shared_preferences: ^2.2.2
-  http: ^1.2.0
   flutter_secure_storage: ^9.0.0
   camera: ^0.10.5+9
   permission_handler: ^11.2.0
-  flutter_naver_map: ^1.1.2
   geolocator: ^10.1.0
   flutter_tts: ^3.8.5
+  flutter_client_sse: ^2.0.1
+  flutter_local_notifications: ^9.4.0
+  google_maps_flutter: ^2.5.3
 
 dev_dependencies:
   flutter_test:

@@ -1,12 +1,20 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
+import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
+import 'package:nugget/common/utils/convert_between_string_liststring.dart';
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:nugget/features/authentication/views/home_screen.dart';
+import 'package:nugget/features/guardian/models/event_model.dart';
+import 'package:nugget/features/guardian/view_models/event_view_model.dart';
 import 'package:nugget/features/guardian/views/events_list_screen.dart';
 import 'package:nugget/features/guardian/views/member_list_screen.dart';
 
@@ -23,19 +31,72 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
 
   Position? _initialPosition;
 
+  final Set<Marker> _markers = {};
+
+  void _updateMarkers(List<EventModel> events) {
+    _markers.clear();
+    for (var event in events) {
+      final marker = Marker(
+        markerId: MarkerId(event.eventId.toString()),
+        position: LatLng(event.latitude, event.longitude),
+        infoWindow:
+            InfoWindow(title: event.memberEmail, snippet: event.locationInfo),
+      );
+      _markers.add(marker);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
     _initNaverMap();
+    _initSseConnection();
   }
 
   Future<void> _getCurrentLocation() async {
     _initialPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      desiredAccuracy: LocationAccuracy.best,
     );
     print('위치: $_initialPosition');
     setState(() {});
+  }
+
+  // TODO: 이벤트 수신을 위한 SSE 연결을 초기화합니다.
+  void _initSseConnection() async {
+    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+
+    SSEClient.subscribeToSSE(
+        method: SSERequestType.GET,
+        url: '$commonUrl/member/sse-connect',
+        header: {
+          "Authorization": accessToken ?? '',
+        }).listen(
+      (event) {
+        final eventData = parseMultipleJson(event.data!);
+
+        if (event.event != 'connect') {
+          showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return CupertinoAlertDialog(
+                title: const Text('Message'),
+                content: Text('${eventData[1]['text']}'),
+                actions: [
+                  CupertinoDialogAction(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+    );
+    print('SSE 연결 완료');
   }
 
   void _initNaverMap() async {
@@ -45,12 +106,6 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
     print('위치 권한: $isLocationPermissionGranted');
 
     if (isLocationPermissionGranted) {
-      await NaverMapSdk.instance.initialize(
-        clientId: "3emvinr9f6",
-        onAuthFailed: (ex) {
-          print("********* 네이버맵 인증오류 : $ex *********");
-        },
-      );
       await _getCurrentLocation();
       setState(() {
         _isMapInitialized = true;
@@ -62,6 +117,9 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final eventsState = ref.watch(eventViewModelProvider);
+
+    _updateMarkers(eventsState); // 마커 갱신
     return Scaffold(
       appBar: AppBar(
         title: const Text('Guardian Map'),
@@ -86,28 +144,14 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
       body: Stack(
         children: [
           _isMapInitialized
-              ? NaverMap(
-                  options: NaverMapViewOptions(
-                    mapType: NMapType.basic,
-                    indoorEnable: true,
-                    initialCameraPosition: _initialPosition != null
-                        ? NCameraPosition(
-                            target: NLatLng(_initialPosition!.latitude,
-                                _initialPosition!.longitude),
-                            zoom: 15,
-                            bearing: 0,
-                            tilt: 0,
-                          )
-                        : null,
-                  ), // 지도 옵션을 설정할 수 있습니다.
-                  forceGesture:
-                      false, // 지도에 전달되는 제스처 이벤트의 우선순위를 가장 높게 설정할지 여부를 지정합니다.
-                  onMapReady: (controller) {},
-                  onMapTapped: (point, latLng) {},
-                  onSymbolTapped: (symbol) {},
-                  onCameraChange: (position, reason) {},
-                  onCameraIdle: () {},
-                  onSelectedIndoorChanged: (indoor) {},
+              ? // 구글지도 추가
+              GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(_initialPosition!.latitude,
+                        _initialPosition!.longitude),
+                    zoom: 16,
+                  ),
+                  markers: _markers, // 마커 추가
                 )
               : const Center(
                   child: CircularProgressIndicator(),
@@ -139,8 +183,12 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
                         ),
                       );
                     } else if (settings.name == '/events') {
+                      final String memberEmail = settings.arguments as String;
                       return MaterialPageRoute(
-                        builder: (context) => const EventsListScreen(),
+                        builder: (context) => EventsListScreen(
+                          scrollController: scrollController,
+                          memberEmail: memberEmail,
+                        ),
                       );
                     }
                     assert(false, 'Need to implement ${settings.name}');

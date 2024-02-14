@@ -16,3 +16,23 @@ List<String> stringToListString(String? str) {
 String listStringToString(List<String> list) {
   return jsonEncode(list);
 }
+
+List<Map<String, dynamic>> parseMultipleJson(String jsonString) {
+  List<Map<String, dynamic>> jsonObjects = [];
+
+  // 정규 표현식을 사용하여 JSON 객체를 분리합니다.
+  RegExp regExp = RegExp(r'\{.*?\}(?=\s*\{)|\{.*?\}\s*$');
+  var matches = regExp.allMatches(jsonString);
+
+  for (var match in matches) {
+    try {
+      String matchedString = match.group(0) ?? '';
+      Map<String, dynamic> jsonObject = json.decode(matchedString);
+      jsonObjects.add(jsonObject);
+    } catch (e) {
+      print('JSON 파싱 에러: $e');
+    }
+  }
+
+  return jsonObjects;
+}

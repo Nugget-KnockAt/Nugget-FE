@@ -1,12 +1,17 @@
 import 'package:camera/camera.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
+import 'package:nugget/common/data/data.dart';
+
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
+
 import 'package:nugget/features/member/views/touch_settings_screen.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
@@ -78,6 +83,14 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     }
   }
 
+  Future<Position> _getCurrentLocation() async {
+    final Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.best,
+    );
+
+    return position;
+  }
+
   Future<void> _onTapFlash() async {
     if (_flashMode == FlashMode.off) {
       await _cameraController.setFlashMode(FlashMode.torch);
@@ -96,12 +109,115 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     }));
   }
 
-  void _handleDoubleTap() {
-    print('Double Tap');
+  void _handleDoubleTap() async {
+    final Dio dio = Dio();
+
+    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+
+    Position position = await _getCurrentLocation();
+
+    final response = await dio.post(
+      '$commonUrl/member/event',
+      data: {
+        'action': 'doubleTap',
+        'latitude': position.latitude.toString(),
+        'longitude': position.longitude.toString(),
+      },
+      options: Options(
+        headers: {
+          'Authorization': accessToken,
+        },
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      print('Double Tap Event Sent');
+
+      print(response.data['result']['guardianList']);
+    } else {
+      print('Failed to send double tap event');
+    }
   }
 
-  void _handleLongPress() {
-    print('Long Press');
+  void _handleLongPress() async {
+    final Dio dio = Dio();
+
+    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+
+    Position position = await _getCurrentLocation();
+
+    final response = await dio.post(
+      '$commonUrl/member/event',
+      data: {
+        'action': 'longPress',
+        'latitude': position.latitude.toString(),
+        'longitude': position.longitude.toString(),
+      },
+      options: Options(
+        headers: {
+          'Authorization': accessToken,
+        },
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      print('Long Press Event Sent');
+
+      print(response.data['result']['guardianList']);
+    } else {
+      print('Failed to send long press event');
+    }
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) async {
+    final Dio dio = Dio();
+
+    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+
+    Position position = await _getCurrentLocation();
+
+    late Response response;
+    try {
+      if (details.primaryDelta! > 30) {
+        response = await dio.post(
+          '$commonUrl/member/event',
+          data: {
+            'action': 'dragDown',
+            'latitude': position.latitude.toString(),
+            'longitude': position.longitude.toString(),
+          },
+          options: Options(
+            headers: {
+              'Authorization': accessToken,
+            },
+          ),
+        );
+      } else if (details.primaryDelta! < -30) {
+        response = await dio.post(
+          '$commonUrl/member/event',
+          data: {
+            'action': 'dragUp',
+            'latitude': position.latitude.toString(),
+            'longitude': position.longitude.toString(),
+          },
+          options: Options(
+            headers: {
+              'Authorization': accessToken,
+            },
+          ),
+        );
+      }
+
+      if (response.statusCode == 200) {
+        print('Drag Event Sent');
+
+        print(response.data['result']['guardianList']);
+      } else {
+        print('Failed to send drag event');
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -121,6 +237,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                   child: GestureDetector(
                     onDoubleTap: _handleDoubleTap,
                     onLongPress: _handleLongPress,
+                    onVerticalDragUpdate: _handleDragUpdate,
                     child: Container(
                       color: Colors.black.withOpacity(0.5),
                       width: MediaQuery.of(context).size.width,
