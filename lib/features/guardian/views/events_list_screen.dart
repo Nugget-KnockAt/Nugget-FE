@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
-import 'package:nugget/features/guardian/models/user_detail_model.dart';
+
 import 'package:nugget/features/guardian/view_models/event_view_model.dart';
+import 'package:nugget/features/guardian/views/event_detail_screen.dart';
 
 class EventsListScreen extends ConsumerStatefulWidget {
   const EventsListScreen({
@@ -45,7 +45,17 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                   title: Text(event.memberName),
                   subtitle: Text(event.locationInfo),
                   trailing: Text(event.createdAt.toString()),
-                  // 기타 필요한 UI 요소 추가
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EventDetailScreen(
+                          eventId: 1,
+                          scrollController: widget.scrollController,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             )
