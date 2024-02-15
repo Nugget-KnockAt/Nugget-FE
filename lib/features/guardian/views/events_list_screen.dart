@@ -50,7 +50,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => EventDetailScreen(
-                          eventId: 1,
+                          eventId: event.eventId,
                           scrollController: widget.scrollController,
                         ),
                       ),

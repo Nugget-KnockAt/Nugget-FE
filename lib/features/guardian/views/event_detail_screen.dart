@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/features/guardian/view_models/event_detail_view_model.dart';
 
@@ -29,59 +30,78 @@ class EventDetailScreen extends ConsumerWidget {
             horizontal: Sizes.size32,
             vertical: Sizes.size32,
           ),
-          height: MediaQuery.of(context).size.height * 0.25,
-          child: DefaultTextStyle(
-              style: Theme.of(context).textTheme.headlineSmall!,
-              child: eventDetailState.when(
-                data: (eventDetail) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Text('Name: '),
-                          Expanded(
-                            child: Text(
-                              eventDetail.memberName,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Text('Location: '),
-                          Expanded(
-                            child: Text(
-                              eventDetail.locationInfo,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Text('Message: '),
-                          Expanded(
-                            child: Text(
-                              eventDetail.text,
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  );
-                },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (error, stackTrace) {
-                  return Center(
-                    child: Text('Error: $error'),
-                  );
-                },
-              )),
+          child: eventDetailState.when(
+            data: (eventDetail) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  EventDetailInfo(
+                    label: 'Name: ',
+                    value: eventDetail.memberName,
+                  ),
+                  Gaps.v32,
+                  EventDetailInfo(
+                    label: 'Location: ',
+                    value: eventDetail.locationInfo,
+                  ),
+                  Gaps.v32,
+                  EventDetailInfo(
+                    label: 'Message: ',
+                    value: eventDetail.text,
+                  ),
+                  Gaps.v32,
+                  EventDetailInfo(
+                    label: 'Date: ',
+                    value: eventDetail.createdAt.toString(),
+                  ),
+                ],
+              );
+            },
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            error: (error, stackTrace) {
+              return Center(
+                child: Text('Error: $error'),
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+}
+
+class EventDetailInfo extends StatelessWidget {
+  const EventDetailInfo({
+    super.key,
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 150,
+          child: Text(
+            '$label ',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+      ],
     );
   }
 }
