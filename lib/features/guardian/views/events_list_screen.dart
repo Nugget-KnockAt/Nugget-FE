@@ -42,8 +42,9 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
               itemBuilder: (context, index) {
                 final event = eventsState[index];
                 return ListTile(
-                  title: Text(event.memberEmail),
+                  title: Text(event.memberName),
                   subtitle: Text(event.locationInfo),
+                  trailing: Text(event.createdAt.toString()),
                   // 기타 필요한 UI 요소 추가
                 );
               },
