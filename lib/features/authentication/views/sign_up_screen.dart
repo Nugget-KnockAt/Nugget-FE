@@ -400,17 +400,17 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ),
         ),
         bottomNavigationBar: BottomAppBar(
-          color: Theme.of(context).primaryColor,
+          color: Theme.of(context).colorScheme.primaryContainer,
           child: TextButton(
             style: TextButton.styleFrom(
               splashFactory: NoSplash.splashFactory,
             ),
             onPressed: _onTapSignUpButton,
-            child: const Text(
+            child: Text(
               'Sign Up',
               style: TextStyle(
                 fontSize: Sizes.size24,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
             ),
           ),

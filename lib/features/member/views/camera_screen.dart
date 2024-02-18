@@ -105,7 +105,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 
   void _onTapSettings() {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return const CameraSettingsScreen();
+      return const TouchSettingsScreen();
     }));
   }
 

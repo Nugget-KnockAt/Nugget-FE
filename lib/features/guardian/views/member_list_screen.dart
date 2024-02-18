@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
-import 'package:nugget/features/guardian/models/user_detail_model.dart';
+
 import 'package:nugget/features/guardian/view_models/user_detail_view_model.dart';
 import 'package:nugget/features/guardian/views/member_add_screen.dart';
 
