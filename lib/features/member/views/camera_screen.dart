@@ -1,6 +1,5 @@
 import 'package:camera/camera.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -13,6 +12,14 @@ import 'package:nugget/features/authentication/view_models/permission_view_model
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 
 import 'package:nugget/features/member/views/touch_settings_screen.dart';
+
+// yolo 에 필요한 import
+//추가 import
+import 'yolo.dart';
+import 'package:image/image.dart' as img;
+import 'package:tflite_flutter/tflite_flutter.dart';
+
+typedef Callback = void Function(List<dynamic> list, int h, int w);
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});
@@ -30,6 +37,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 
   // 카메라가 초기화 되었는지 확인하는 변수
   bool _isCameraInitialized = false;
+
+  //추가
+  int _frameCounter = 0; // 프레임 카운터 선언
+  final int _frameThreshold = 5; // 처리 프레임 설정
 
   @override
   void initState() {
@@ -78,9 +89,57 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
       if (mounted) {
         setState(() {});
       }
+
+      //추가
+      Interpreter interpreter =
+          await Interpreter.fromAsset('assets/models/yolov8n_float16.tflite');
+
+      _cameraController.startImageStream((CameraImage cameraImage) async {
+        _frameCounter++; // 프레임 카운터 증가
+        if (_frameCounter >= _frameThreshold) {
+          // 프레임 카운터가 임계값에 도달했는지 확인
+          _frameCounter = 0; // 프레임 카운터 리셋
+
+          // Convert CameraImage to img.Image
+          img.Image image = convertBGRA8888ToImage(cameraImage);
+
+          try {
+            List<String> indices = await Yolov8(image, interpreter); // 비동기 처리
+            print(indices);
+          } catch (e) {
+            // 오류 처리
+            print(e.toString());
+          }
+        }
+      });
     } else {
       print('카메라 권한이 없습니다.');
     }
+  }
+
+  ///추가 convertBGRA8888ToImage
+  // CameraImage (BGRA format) to img.Image conversion
+  img.Image convertBGRA8888ToImage(CameraImage image) {
+    final int width = image.width;
+    final int height = image.height;
+    final img.Image imgLibImage =
+        img.Image(width: width, height: height); // Create img.Image
+
+    final bgra = image.planes[0].bytes;
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        final int offset =
+            (y * width + x) * 4; // BGRA8888 means 4 bytes per pixel
+        final blue = bgra[offset];
+        final green = bgra[offset + 1];
+        final red = bgra[offset + 2];
+        final alpha = bgra[offset + 3];
+
+        imgLibImage.setPixelRgba(x, y, red, green, blue, alpha);
+      }
+    }
+
+    return imgLibImage;
   }
 
   Future<Position> _getCurrentLocation() async {
@@ -242,48 +301,6 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
                       color: Colors.black.withOpacity(0.5),
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 20,
-                  left: 20,
-                  child: GestureDetector(
-                    onTap: () {
-                      showCupertinoDialog(
-                        context: context,
-                        builder: (context) {
-                          return CupertinoAlertDialog(
-                            title: const Text('사용자 ID'),
-                            content: Text(state.uuid),
-                            actions: [
-                              CupertinoDialogAction(
-                                child: const Text('확인'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          Sizes.size10,
-                        ),
-                      ),
-                      width: 50,
-                      height: 50,
-                      child: Center(
-                        child: FaIcon(
-                          FontAwesomeIcons.userPlus,
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
                     ),
                   ),
                 ),

@@ -53,6 +53,9 @@ dependencies:
   flutter_local_notifications: ^9.4.0
   google_maps_flutter: ^2.5.3
   intl: ^0.19.0
+  tflite_flutter: ^0.10.1
+  image: ^4.1.7
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +84,7 @@ flutter:
   assets:
     - assets/logo/
     - assets/icons/
+    - assets/models/
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

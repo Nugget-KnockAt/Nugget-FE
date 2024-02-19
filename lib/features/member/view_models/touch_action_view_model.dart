@@ -153,3 +153,59 @@ class DragDownActionNotifier extends AsyncNotifier<TouchActionModel> {
     });
   }
 }
+
+
+/* 상속 관계를 이용한 리팩토링
+// 공통 부모 클래스
+abstract class TouchActionNotifier extends AsyncNotifier<TouchActionModel> {
+  final TouchSettingRepository _touchSettingRepository;
+  final TouchActionType actionType;
+
+  TouchActionNotifier(this._touchSettingRepository, this.actionType);
+
+  @override
+  FutureOr<TouchActionModel> build() async {
+    state = const AsyncValue.loading();
+
+    state = await AsyncValue.guard(() async => await _touchSettingRepository
+        .getTouchAction(actionType));
+
+    return state.value!;
+  }
+
+  Future<void> saveTouchAction(String text) async {
+    final action = TouchActionModel(
+      action: actionType.name,
+      text: text,
+    );
+
+    state = const AsyncValue.loading();
+
+    state = await AsyncValue.guard(() async {
+      await _touchSettingRepository.saveTouchAction(action);
+      return action;
+    });
+  }
+}
+
+// 구체적인 액션 클래스
+class DoubleTapActionNotifier extends TouchActionNotifier {
+  DoubleTapActionNotifier(TouchSettingRepository touchSettingRepository)
+      : super(touchSettingRepository, TouchActionType.doubleTap);
+}
+
+class LongPressActionNotifier extends TouchActionNotifier {
+  LongPressActionNotifier(TouchSettingRepository touchSettingRepository)
+      : super(touchSettingRepository, TouchActionType.longPress);
+}
+
+class DragUpActionNotifier extends TouchActionNotifier {
+  DragUpActionNotifier(TouchSettingRepository touchSettingRepository)
+      : super(touchSettingRepository, TouchActionType.dragUp);
+}
+
+class DragDownActionNotifier extends TouchActionNotifier {
+  DragDownActionNotifier(TouchSettingRepository touchSettingRepository)
+      : super(touchSettingRepository, TouchActionType.dragDown);
+}
+ */

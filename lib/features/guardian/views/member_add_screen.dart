@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
+import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
 
 class MemberAddScreen extends ConsumerStatefulWidget {
   const MemberAddScreen({super.key});
@@ -15,7 +16,7 @@ class MemberAddScreen extends ConsumerStatefulWidget {
 }
 
 class _MemberAddScreenState extends ConsumerState<MemberAddScreen> {
-  final TextEditingController _memberIdController = TextEditingController();
+  final TextEditingController _memberEmailController = TextEditingController();
 
   void _connectMember() async {
     // 멤버 연결 api 호출
@@ -31,7 +32,7 @@ class _MemberAddScreenState extends ConsumerState<MemberAddScreen> {
           'Authorization': accessToken,
         }),
         data: {
-          'uuid': _memberIdController.text,
+          'email': _memberEmailController.text,
         },
       );
 
@@ -44,7 +45,7 @@ class _MemberAddScreenState extends ConsumerState<MemberAddScreen> {
           _showErrorDialog(response.data['message']);
         } else {
           // 유효한 사용자 ID라면,
-          showCupertinoDialog(
+          await showCupertinoDialog(
             context: context,
             builder: (context) {
               return CupertinoAlertDialog(
@@ -54,7 +55,12 @@ class _MemberAddScreenState extends ConsumerState<MemberAddScreen> {
                   CupertinoDialogAction(
                     child: const Text('OK'),
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const GuardianMapScreen()),
+                        (route) => false,
+                      );
                     },
                   ),
                 ],
@@ -109,12 +115,12 @@ class _MemberAddScreenState extends ConsumerState<MemberAddScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Enter Member ID\nto Connect',
+                'Enter Member\nEmail to Connect',
                 style: Theme.of(context).textTheme.displaySmall,
               ),
               Gaps.v52,
               TextField(
-                controller: _memberIdController,
+                controller: _memberEmailController,
                 decoration: InputDecoration(
                   filled: false,
                   enabledBorder: UnderlineInputBorder(
@@ -129,7 +135,7 @@ class _MemberAddScreenState extends ConsumerState<MemberAddScreen> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  labelText: 'Member ID',
+                  labelText: 'Member Email',
                 ),
               ),
               Gaps.v32,
