@@ -42,13 +42,9 @@ class MemberListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final loginedUserState = ref.watch(userInfoViewModelProvider);
+    final loginedUserState = ref.watch(authProvider);
 
-    print(
-        'loginedUserState.connectionList: ${loginedUserState.connectionList}');
-
-    final userDetailsAsyncValue =
-        ref.watch(userDetailsProvider(loginedUserState.connectionList));
+    final connectedMemberList = ref.watch(connectedUserInfoListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +64,7 @@ class MemberListScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: userDetailsAsyncValue.when(
+      body: connectedMemberList.when(
         data: (userDetails) {
           return ListView(
             controller: scrollController,

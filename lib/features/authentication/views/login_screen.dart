@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
-import 'package:nugget/common/data/data.dart';
+
 import 'package:nugget/common/utils/account_validate.dart';
 import 'package:nugget/features/authentication/models/user_info_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
@@ -23,7 +23,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final Dio _dio = Dio();
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
@@ -31,80 +30,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final password = _passwordController.text;
 
       // Perform the POST request to sign up
-      try {
-        final response = await _dio.post(
-          '$commonUrl/member/login', // Replace with your API endpoint
-          data: {
-            'email': email,
-            'password': password,
-          },
+      final UserInfoModel userInfo = await ref
+          .read(authProvider.notifier)
+          .signIn(email: email, password: password);
+
+      print(userInfo.email);
+      print('${userInfo.role}');
+
+      if (userInfo.role == Role.guardian) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const GuardianMapScreen(),
+          ),
         );
-
-        if (response.statusCode == 200) {
-          final userInfo = UserInfoModel.fromJson(response.data['result']);
-
-          // 로그인이 성공하면 사용자의 토큰 정보를 기기에 저장한다.
-          await storage.write(
-              key: ACCESS_TOKEN_KEY,
-              value: response.data['result']['accessToken']);
-          await storage.write(
-              key: REFRESH_TOKEN_KEY,
-              value: response.data['result']['refreshToken']);
-
-          // 로그인이 성공하면 사용자의 정보를 기기에 저장한다.
-          await storage.write(key: USER_UUID_KEY, value: userInfo.uuid);
-          await storage.write(key: USERNAME_KEY, value: userInfo.username);
-          await storage.write(key: USER_EMAIL_KEY, value: userInfo.email);
-          await storage.write(key: USER_PHONE_KEY, value: userInfo.phoneNumber);
-          await storage.write(
-              key: USER_TYPE_KEY, value: userInfo.userType.toString());
-          await storage.write(
-            key: CONNECTION_LIST_KEY,
-            value: jsonEncode(userInfo.connectionList),
-          );
-
-          // 사용자의 상태를 업데이트한다.
-          ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
-                uuid: userInfo.uuid,
-                userType: userInfo.userType,
-                username: userInfo.username,
-                phoneNumber: userInfo.phoneNumber,
-                email: email,
-                connectionList: userInfo.connectionList,
-              );
-
-          // 사용자의 타입에 따라 다른 화면으로 이동한다.
-          if (userInfo.userType == UserType.member) {
-            if (!mounted) return;
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CameraScreen(),
-              ),
-              (route) => false,
-            );
-          } else {
-            if (!mounted) return;
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const GuardianMapScreen(),
-              ),
-              (route) => false,
-            );
-          }
-          // Navigate or do something else
-        } else {
-          // Handle non-successful response
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to sign up')),
-          );
-        }
-      } catch (e) {
-        // Handle errors
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error occurred during sign up')),
+      } else {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CameraScreen(),
+          ),
         );
       }
     }

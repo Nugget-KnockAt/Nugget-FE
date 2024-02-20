@@ -171,7 +171,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   void _handleDoubleTap() async {
     final Dio dio = Dio();
 
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+    final accessToken =
+        ref.read(authProvider.notifier).state.value!.accessToken;
+    print('accessToken: $accessToken');
 
     Position position = await _getCurrentLocation();
 
@@ -201,7 +203,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   void _handleLongPress() async {
     final Dio dio = Dio();
 
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+    final accessToken =
+        ref.read(authProvider.notifier).state.value!.accessToken;
+    print('accessToken: $accessToken');
 
     Position position = await _getCurrentLocation();
 
@@ -231,7 +235,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
   void _handleDragUpdate(DragUpdateDetails details) async {
     final Dio dio = Dio();
 
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+    final accessToken =
+        ref.read(authProvider.notifier).state.value!.accessToken;
+    print('accessToken: $accessToken');
 
     Position position = await _getCurrentLocation();
 
@@ -281,8 +287,6 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(userInfoViewModelProvider);
-
     return Scaffold(
       body: _isCameraInitialized
           ? Stack(

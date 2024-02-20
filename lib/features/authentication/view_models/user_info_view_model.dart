@@ -1,75 +1,112 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nugget/common/data/data.dart';
+import 'package:nugget/features/authentication/models/user_info_from_email_model.dart';
 import 'package:nugget/features/authentication/models/user_info_model.dart';
+import 'package:nugget/features/authentication/repository/auth_repository.dart';
 
-final userInfoViewModelProvider =
-    StateNotifierProvider<UserInfoViewModel, UserInfoModel>(
-  (ref) {
-    return UserInfoViewModel();
-  },
-);
+// provider
+final authProvider = AsyncNotifierProvider<AuthNotifier, UserInfoModel>(() {
+  final authRepository = AuthRepository();
+  return AuthNotifier(authRepository);
+});
 
-class UserInfoViewModel extends StateNotifier<UserInfoModel> {
-  UserInfoViewModel()
-      : super(
-          UserInfoModel(
-            uuid: '',
-            userType: UserType.member,
-            username: '',
-            phoneNumber: '',
-            email: '',
-            connectionList: [],
-          ),
-        );
+final connectedUserInfoListProvider = AsyncNotifierProvider<
+    ConnectedUserInfoListNotifier, List<UserInfoFromEmailModel>>(() {
+  return ConnectedUserInfoListNotifier(AuthRepository());
+});
 
-  void updateUserUuid(String uuid) {
-    state = state.copyWith(uuid: uuid);
-  }
+// notifier
+class AuthNotifier extends AsyncNotifier<UserInfoModel> {
+  final AuthRepository _authRepository;
 
-  void updateUserInfo({
-    required String uuid,
-    required UserType userType,
-    required String username,
-    required String phoneNumber,
-    required String email,
-    required List<String> connectionList,
-  }) {
-    state = state.copyWith(
-      uuid: uuid,
-      userType: userType,
-      username: username,
-      phoneNumber: phoneNumber,
-      email: email,
-      connectionList: connectionList,
-    );
-  }
+  AuthNotifier(this._authRepository);
 
-  void updateUserType(UserType userType) {
-    state = state.copyWith(userType: userType);
-  }
-
-  void updateUsername(String username) {
-    state = state.copyWith(username: username);
-  }
-
-  void updatePhoneNumber(String phoneNumber) {
-    state = state.copyWith(phoneNumber: phoneNumber);
-  }
-
-  void updateEmail(String email) {
-    state = state.copyWith(email: email);
-  }
-
-  void updateConnectionList(List<String> connectionList) {
-    state = state.copyWith(connectionList: connectionList);
-  }
-
-  void clearUserInfo() {
-    state = state.copyWith(
+  @override
+  FutureOr<UserInfoModel> build() {
+    return UserInfoModel(
+      role: Role.member, // Or another appropriate default value
       uuid: '',
-      userType: UserType.member,
-      username: '',
+      name: '',
       phoneNumber: '',
       email: '',
+      accessToken: '',
+      refreshToken: '',
+      connectionList: [],
     );
+  }
+
+  Future<UserInfoModel> signIn({
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async =>
+        await _authRepository.login(email: email, password: password));
+
+    /* 
+    *  로그인 성공 시, 사용자의 토큰을 기기에 저장한다.
+     */
+    await _authRepository.storeUserInfoIntoDevice(
+      email: email,
+      password: password,
+      accessToken: state.value!.accessToken,
+      refreshToken: state.value!.refreshToken,
+    );
+
+    return state.value!;
+  }
+
+  Future<UserInfoModel> signUp(
+      {required String email,
+      required String password,
+      required String name,
+      required String phoneNumber,
+      required Role role}) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async => await _authRepository.signUp(
+          email: email,
+          password: password,
+          name: name,
+          phoneNumber: phoneNumber,
+          role: role,
+        ));
+
+    await _authRepository.storeUserInfoIntoDevice(
+      email: email,
+      password: password,
+      accessToken: state.value!.accessToken,
+      refreshToken: state.value!.refreshToken,
+    );
+
+    return state.value!;
+  }
+
+  Future<void> signOut() async {
+    await _authRepository.removeUserInfoFromDevice();
+  }
+}
+
+class ConnectedUserInfoListNotifier
+    extends AsyncNotifier<List<UserInfoFromEmailModel>> {
+  final AuthRepository _authRepository;
+
+  ConnectedUserInfoListNotifier(this._authRepository);
+
+  @override
+  FutureOr<List<UserInfoFromEmailModel>> build() async {
+    final connectedMemberList =
+        ref.read(authProvider.notifier).state.value!.connectionList;
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard<List<UserInfoFromEmailModel>>(() async {
+      return await Future.wait(
+        connectedMemberList
+            .map((e) => _authRepository.getUserInfoByEmail(e))
+            .toList(),
+      );
+    });
+
+    return state.value!;
   }
 }

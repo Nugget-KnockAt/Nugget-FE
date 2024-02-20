@@ -124,13 +124,14 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
       appBar: AppBar(
         title: const Text('Guardian Map'),
         actions: [
+          // 로그아웃 버튼
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              ref.read(userInfoViewModelProvider.notifier).clearUserInfo();
-              await storage.delete(key: ACCESS_TOKEN_KEY);
-              await storage.delete(key: REFRESH_TOKEN_KEY);
+              // 로그아웃 처리
+              await ref.read(authProvider.notifier).signOut();
 
+              // 홈 화면으로 이동
               if (!mounted) return;
               Navigator.pushAndRemoveUntil(
                 context,

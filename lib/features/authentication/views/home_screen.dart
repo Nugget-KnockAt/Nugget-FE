@@ -43,56 +43,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // 기기에 저장되어 있는 사용자의 정보를 가져오는 함수
   Future<void> _loadUserInfo() async {
-    // 저장되어 있는 사용자 정보를 불러온다.
+    /* 
+      기기에 토큰이 존재하면
+      로그아웃을 안 한 것이므로
+      기기에 저장되어 있는 사용자 이메일과 비밀번호를 불러와서
+      로그인한다.
+     */
+    final userEmail = await storage.read(key: USER_EMAIL_KEY);
+    final userPw = await storage.read(key: USER_PW_KEY);
 
-    final uuidStr = await storage.read(key: USER_UUID_KEY);
-    final usernameStr = await storage.read(key: USERNAME_KEY);
-    final emailStr = await storage.read(key: USER_EMAIL_KEY);
-    final phoneNumberStr = await storage.read(key: USER_PHONE_KEY);
-    final userTypeStr = await storage.read(key: USER_TYPE_KEY);
-    final connectionListStr = await storage.read(key: CONNECTION_LIST_KEY);
-
-    // 저장되어 있는 userTypeStr을 UserType으로 변환
-    // 저장되어 있는 값이 없으면 null
-    final UserType? userType = userTypeStr == UserType.member.toString()
-        ? UserType.member
-        : userTypeStr == UserType.guardian.toString()
-            ? UserType.guardian
-            : null;
-
-    if (uuidStr != null &&
-        usernameStr != null &&
-        emailStr != null &&
-        phoneNumberStr != null &&
-        userType != null) {
-      // 사용자 정보를 업데이트한다.
-      List<String> connectionList = stringToListString(connectionListStr);
-
-      ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
-            uuid: uuidStr,
-            userType: userType,
-            username: usernameStr,
-            phoneNumber: phoneNumberStr,
-            email: emailStr,
-            connectionList: connectionList,
-          );
-
-      print('This is loadUserInfo function');
-      print(
-          'uuidStr: ${ref.read(userInfoViewModelProvider.notifier).state.uuid}');
-      print(
-          'usernameStr: ${ref.read(userInfoViewModelProvider.notifier).state.username}');
-      print(
-          'emailStr: ${ref.read(userInfoViewModelProvider.notifier).state.email}');
-      print(
-          'phoneNumberStr: ${ref.read(userInfoViewModelProvider.notifier).state.phoneNumber}');
-      print(
-          'userType: ${ref.read(userInfoViewModelProvider.notifier).state.userType}');
-      print(
-          'connectionList: ${ref.read(userInfoViewModelProvider.notifier).state.connectionList}');
-    } else {
-      // 사용자 정보가 없으면 로그인 화면으로 이동한다.
-      print('사용자 정보가 없습니다.');
+    if (userEmail != null && userPw != null) {
+      await ref
+          .read(authProvider.notifier)
+          .signIn(email: userEmail, password: userPw);
     }
   }
 
@@ -204,45 +167,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // access token이 있으면 이미 사용자가 로그인 되어있다는 뜻이므로
     // 기기에 저장되어 있는 사용자의 정보를 로드한다.
 
-    try {
-      await _loadUserInfo();
+    await _loadUserInfo();
 
-      // 사용자의 타입에 따라 다른 화면으로 이동한다.
-      final UserType userType =
-          ref.read(userInfoViewModelProvider.notifier).state.userType;
+    // 사용자의 타입에 따라 다른 화면으로 이동한다.
+    final userInfo = ref.read(authProvider.notifier).state;
 
-      print('userType: $userType');
-
-      // 사용자의 타입이 member이면 카메라 화면으로 이동
-      if (userType == UserType.member) {
-        // 회원 계정으로 로그인한 경우
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const CameraScreen(),
-          ),
-          (route) => false,
-        );
-      }
-      // 사용자의 타입이 guardian이면 보호자 맵 화면으로 이동
-      else if (userType == UserType.guardian) {
-        // 보호자 계정으로 로그인한 경우
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const GuardianMapScreen(),
-          ),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      print(e);
+    if (userInfo.value!.role == Role.guardian) {
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const GuardianMapScreen(),
+        ),
+      );
+    } else {
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const CameraScreen(),
+        ),
+      );
     }
   }
-
-  final Dio dio = Dio();
 
   @override
   Widget build(BuildContext contex) {

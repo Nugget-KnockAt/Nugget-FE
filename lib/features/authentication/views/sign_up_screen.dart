@@ -5,7 +5,7 @@ import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
 import 'package:nugget/common/utils/account_validate.dart';
-import 'package:nugget/common/utils/convert_between_string_liststring.dart';
+
 import 'package:nugget/features/authentication/models/user_info_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
@@ -26,9 +26,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   final Map<String, String> _formData = {};
 
-  final Dio _dio = Dio();
+  final bool _isEmailAvailable = false;
 
-  bool _isEmailAvailable = false;
+  late Role _role;
 
   @override
   void dispose() {
@@ -42,86 +42,60 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       _formKey.currentState!.save();
       print(_formData);
 
+      final email = _formData['email'];
+      final password = _formData['password'];
+      final name = _formData['name'];
+      final phoneNumber = _formData['phone'];
+
       // Perform the POST request to sign up
-      try {
-        final response = await _dio.post(
-          '$commonUrl/member/signUp',
-          data: {
-            'email': _formData['email'].toString(),
-            'password': _formData['password'].toString(),
-            'name': _formData['name'].toString(),
-            'phoneNumber': _formData['phone'].toString(),
-            'role':
-                ref.read(userInfoViewModelProvider).userType == UserType.member
-                    ? 'ROLE_MEMBER'
-                    : 'ROLE_GUARDIAN',
-          },
-        );
-
-        print(response.statusCode);
-        print('result: ${response.data}');
-        if (response.statusCode == 200) {
-          // 사용자 정보 state update
-          final userInfo = UserInfoModel.fromJson(response.data['result']);
-
-          ref.read(userInfoViewModelProvider.notifier).updateUserInfo(
-                uuid: userInfo.uuid,
-                username: userInfo.username,
-                email: userInfo.email,
-                phoneNumber: userInfo.phoneNumber,
-                userType: userInfo.userType,
-                connectionList: userInfo.connectionList,
-              );
-          // 회원가입이 완료되었으면 사용자 정보를 기기에 저장한다.
-          await storage.write(key: USER_UUID_KEY, value: userInfo.uuid);
-          await storage.write(key: USERNAME_KEY, value: userInfo.username);
-          await storage.write(key: USER_EMAIL_KEY, value: userInfo.email);
-          await storage.write(key: USER_PHONE_KEY, value: userInfo.phoneNumber);
-          await storage.write(
-            key: USER_TYPE_KEY,
-            value: userInfo.userType.toString(),
+      final userInfo = await ref.read(authProvider.notifier).signUp(
+            email: email!,
+            password: password!,
+            name: name!,
+            phoneNumber: phoneNumber!,
+            role: _role,
           );
-          await storage.write(
-            key: CONNECTION_LIST_KEY,
-            value: listStringToString(userInfo.connectionList),
-          );
-          // 회원가입이 완료되었으면 사용자의 토큰을 기기에 저장한다.
-          await storage.write(
-              key: ACCESS_TOKEN_KEY,
-              value: response.data['result']['accessToken']);
-          await storage.write(
-              key: REFRESH_TOKEN_KEY,
-              value: response.data['result']['refreshToken']);
-        }
 
-        // 회원가입이 완료되었으면 사용자의 타입 (member, guardian)에 따라 다른 화면으로 이동한다.
-        if (ref.read(userInfoViewModelProvider).userType == UserType.member) {
-          if (!mounted) return;
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const CameraScreen()),
-            (route) => false,
-          );
-        } else {
-          if (!mounted) return;
-          Navigator.pushAndRemoveUntil(
+      if (userInfo.role == Role.guardian) {
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const GuardianMapScreen()),
-            (route) => false,
-          );
-        }
-      } catch (e) {
-        // Handle errors
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sign up failed: ${e.toString()}')),
-        );
+            (route) => false);
+      } else {
+        if (!mounted) return;
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const CameraScreen()),
+            (route) => false);
       }
     }
   }
 
+  Future<bool> checkEmailExist(String email) async {
+    final Dio dio = Dio();
+    try {
+      final response = await dio.get(
+        '$commonUrl/member/checkEmail',
+        queryParameters: {
+          'email': email,
+        },
+      );
+      final result = response.data['result'];
+
+      if (result == 'true') {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
   // 이메일 중복확인을 위한 함수
-  void _checkEmailDuplicate() async {
+  void handleDuplication() async {
     if (validateEmail(_emailController.text) != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -131,24 +105,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
     // 이메일 중복확인을 위한 GET request
-    final res = await _dio.get(
-      '$commonUrl/member/checkEmail',
-      queryParameters: {
-        'email': _emailController.text,
-      },
-    );
-    final resultBoolean = res.data['result'].toString();
-    print('resultBoolean: $resultBoolean');
-
-    if (res.statusCode == 200) {
-      if (resultBoolean == 'true') {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Email is available')),
-        );
-
-        _isEmailAvailable = true;
-      }
+    final result = await checkEmailExist(_emailController.text);
+    if (result) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email is available')),
+      );
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +123,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(userInfoViewModelProvider);
+    final state = ref.watch(authProvider);
 
     return GestureDetector(
       onTap: () {
@@ -225,7 +187,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: _checkEmailDuplicate,
+                        onPressed: handleDuplication,
                         child: const Text('Check duplication'),
                       ),
                     ],
@@ -371,24 +333,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       Expanded(
                         child: RadioListTile(
                           title: const Text('Member'),
-                          value: UserType.member,
-                          groupValue: state.userType,
-                          onChanged: (UserType? value) {
-                            ref
-                                .read(userInfoViewModelProvider.notifier)
-                                .updateUserType(value!);
+                          value: Role.member,
+                          groupValue: _role,
+                          onChanged: (value) {
+                            setState(() {
+                              _role = value as Role;
+                            });
                           },
                         ),
                       ),
                       Expanded(
                         child: RadioListTile(
                           title: const Text('Guardian'),
-                          value: UserType.guardian,
-                          groupValue: state.userType,
-                          onChanged: (UserType? value) {
-                            ref
-                                .read(userInfoViewModelProvider.notifier)
-                                .updateUserType(value!);
+                          value: Role.guardian,
+                          groupValue: _role,
+                          onChanged: (value) {
+                            setState(() {
+                              _role = value as Role;
+                            });
                           },
                         ),
                       ),

@@ -183,14 +183,12 @@ class _TouchSettingsScreenState extends ConsumerState<TouchSettingsScreen> {
                 left: 0,
                 right: 0,
                 child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // 로그아웃
-                      storage.delete(key: ACCESS_TOKEN_KEY);
-                      storage.delete(key: REFRESH_TOKEN_KEY);
-                      ref
-                          .read(userInfoViewModelProvider.notifier)
-                          .clearUserInfo();
 
+                      await ref.read(authProvider.notifier).signOut();
+
+                      if (!mounted) return;
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
