@@ -173,20 +173,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (userInfo.value!.role == Role.guardian) {
       if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const GuardianMapScreen(),
-        ),
-      );
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const GuardianMapScreen()),
+          (route) => false);
     } else {
       if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const CameraScreen(),
-        ),
-      );
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const CameraScreen()),
+          (route) => false);
     }
   }
 
