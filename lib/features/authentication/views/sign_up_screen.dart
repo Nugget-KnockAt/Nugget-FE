@@ -123,8 +123,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(authProvider);
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();

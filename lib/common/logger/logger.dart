@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nugget/features/authentication/models/user_info_model.dart';
 
 class Logger extends ProviderObserver {
   @override
