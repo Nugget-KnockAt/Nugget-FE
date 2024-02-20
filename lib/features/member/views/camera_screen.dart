@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:nugget/common/constants/gaps.dart';
@@ -10,6 +11,7 @@ import 'package:nugget/common/data/data.dart';
 
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
+import 'package:nugget/features/member/isolate_helper_mixin.dart';
 
 import 'package:nugget/features/member/views/touch_settings_screen.dart';
 
@@ -28,9 +30,11 @@ class CameraScreen extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends ConsumerState<CameraScreen> {
+class _CameraScreenState extends ConsumerState<CameraScreen>
+    with IsolateHelperMixin {
   // 카메라 객체
   late CameraController _cameraController;
+  FlutterTts flutterTts = FlutterTts();
 
   // 플래쉬 상태
   FlashMode _flashMode = FlashMode.off;
@@ -40,7 +44,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 
   //추가
   int _frameCounter = 0; // 프레임 카운터 선언
-  final int _frameThreshold = 5; // 처리 프레임 설정
+  final int _frameThreshold = 60; // 처리 프레임 설정
 
   @override
   void initState() {
@@ -55,6 +59,21 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
     _cameraController.dispose();
 
     super.dispose();
+  }
+
+  Future<void> _initTts() async {
+    await flutterTts.setSharedInstance(true);
+    await flutterTts.setIosAudioCategory(
+        IosTextToSpeechAudioCategory.ambient,
+        [
+          IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+          IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+          IosTextToSpeechAudioCategoryOptions.mixWithOthers
+        ],
+        IosTextToSpeechAudioMode.voicePrompt);
+    await flutterTts.awaitSpeakCompletion(true);
+    await flutterTts.awaitSynthCompletion(true);
+    await flutterTts.setLanguage('en-US');
   }
 
   // 카메라 초기화
@@ -86,6 +105,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
 
       // 카메라 컨트롤러가 초기화되면 화면을 갱신한다.
       _isCameraInitialized = true;
+
+      await _initTts();
+
       if (mounted) {
         setState(() {});
       }
@@ -106,6 +128,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen> {
           try {
             List<String> indices = await Yolov8(image, interpreter); // 비동기 처리
             print(indices);
+
+            if (indices.isNotEmpty) {
+              await flutterTts.speak('There is $indices in front of you.');
+            }
           } catch (e) {
             // 오류 처리
             print(e.toString());
