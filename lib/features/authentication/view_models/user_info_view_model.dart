@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nugget/common/data/data.dart';
+
 import 'package:nugget/features/authentication/models/user_info_from_email_model.dart';
 import 'package:nugget/features/authentication/models/user_info_model.dart';
 import 'package:nugget/features/authentication/repository/auth_repository.dart';
@@ -86,6 +86,19 @@ class AuthNotifier extends AsyncNotifier<UserInfoModel> {
   Future<void> signOut() async {
     await _authRepository.removeUserInfoFromDevice();
   }
+
+  Future<void> connectMember(String email) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final connectedMemberList = state.value!.connectionList;
+      await _authRepository.connectMember(email);
+      connectedMemberList.add(email);
+
+      return state.value!.copyWith(connectionList: connectedMemberList);
+    });
+
+    print('Connected Member List: ${state.value!.connectionList}');
+  }
 }
 
 class ConnectedUserInfoListNotifier
@@ -96,8 +109,7 @@ class ConnectedUserInfoListNotifier
 
   @override
   FutureOr<List<UserInfoFromEmailModel>> build() async {
-    final connectedMemberList =
-        ref.read(authProvider.notifier).state.value!.connectionList;
+    final connectedMemberList = ref.watch(authProvider).value!.connectionList;
     state = const AsyncValue.loading();
     state = await AsyncValue.guard<List<UserInfoFromEmailModel>>(() async {
       return await Future.wait(

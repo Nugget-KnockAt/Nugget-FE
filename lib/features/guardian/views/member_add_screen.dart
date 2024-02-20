@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/common/constants/gaps.dart';
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
+import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:nugget/features/authentication/views/home_screen.dart';
 import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
 
@@ -19,7 +20,15 @@ class MemberAddScreen extends ConsumerStatefulWidget {
 class _MemberAddScreenState extends ConsumerState<MemberAddScreen> {
   final TextEditingController _memberEmailController = TextEditingController();
 
-  void _connectMember() async {}
+  void _connectMember() async {
+    await ref.read(authProvider.notifier).connectMember(
+          _memberEmailController.text,
+        );
+
+    if (!mounted) return;
+    Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => const GuardianMapScreen()));
+  }
 
   @override
   Widget build(BuildContext context) {

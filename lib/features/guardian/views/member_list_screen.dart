@@ -44,6 +44,8 @@ class MemberListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loginedUserState = ref.watch(authProvider);
 
+    print('loginedUserState: ${loginedUserState.value!.connectionList}');
+
     final connectedMemberList = ref.watch(connectedUserInfoListProvider);
 
     return Scaffold(
