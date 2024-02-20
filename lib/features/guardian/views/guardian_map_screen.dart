@@ -15,6 +15,7 @@ import 'package:nugget/features/authentication/view_models/user_info_view_model.
 import 'package:nugget/features/authentication/views/home_screen.dart';
 import 'package:nugget/features/guardian/models/event_model.dart';
 import 'package:nugget/features/guardian/view_models/event_view_model.dart';
+import 'package:nugget/features/guardian/views/event_detail_screen.dart';
 import 'package:nugget/features/guardian/views/events_list_screen.dart';
 import 'package:nugget/features/guardian/views/member_list_screen.dart';
 
@@ -33,6 +34,12 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
 
   final Set<Marker> _markers = {};
 
+  late ScrollController _scrollController;
+
+  // DraggableScrollableSheet 내부의 Navigator를 위한 GlobalKey 추가
+  final GlobalKey<NavigatorState> _sheetNavigatorKey =
+      GlobalKey<NavigatorState>();
+
   void _updateMarkers(List<EventModel> events) {
     _markers.clear();
     for (var event in events) {
@@ -41,6 +48,15 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
         position: LatLng(event.latitude, event.longitude),
         infoWindow:
             InfoWindow(title: event.memberEmail, snippet: event.locationInfo),
+        onTap: () {
+          // 이 부분을 수정하여 DraggableScrollableSheet 내부의 Navigator를 사용하도록 변경
+          _sheetNavigatorKey.currentState?.push(MaterialPageRoute(
+            builder: (context) => EventDetailScreen(
+              eventId: event.eventId,
+              scrollController: _scrollController,
+            ),
+          ));
+        },
       );
       _markers.add(marker);
     }
@@ -165,6 +181,8 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
             maxChildSize:
                 0.9, // The maximum height of the bottom sheet when dragging up
             builder: (BuildContext context, ScrollController scrollController) {
+              _scrollController = scrollController;
+
               return Container(
                 clipBehavior: Clip.hardEdge,
                 decoration: const BoxDecoration(
@@ -175,6 +193,7 @@ class _GuardianMapScreenState extends ConsumerState<GuardianMapScreen> {
                   ),
                 ),
                 child: Navigator(
+                  key: _sheetNavigatorKey,
                   onGenerateRoute: (settings) {
                     if (settings.name == '/') {
                       return MaterialPageRoute(

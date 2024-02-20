@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
@@ -7,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nugget/common/constants/sizes.dart';
 import 'package:nugget/common/data/data.dart';
-import 'package:nugget/common/utils/convert_between_string_liststring.dart';
+
 import 'package:nugget/features/authentication/models/user_info_model.dart';
 import 'package:nugget/features/authentication/view_models/permission_view_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
