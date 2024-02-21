@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:nugget/common/constants/gaps.dart';
@@ -45,7 +46,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
   //추가
   int _frameCounter = 0; // 프레임 카운터 선언
-  final int _frameThreshold = 60; // 처리 프레임 설정
+  final int _frameThreshold = 120; // 처리 프레임 설정
   Interpreter? interpreter;
   bool _isEventavoke = false;
 
@@ -136,6 +137,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
             print(indices);
 
             if (indices.isNotEmpty) {
+              await flutterTts.stop();
               await flutterTts.speak('There is $indices in front of you.');
             }
           } catch (e) {
@@ -223,6 +225,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   }
 
   void _handleDoubleTap() async {
+    await flutterTts.stop();
     final Dio dio = Dio();
 
     final accessToken =
@@ -258,6 +261,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   }
 
   void _handleLongPress() async {
+    await flutterTts.stop();
     final Dio dio = Dio();
 
     final accessToken =
@@ -293,6 +297,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   }
 
   void _handleDragUpdate(DragUpdateDetails details) async {
+    await flutterTts.stop();
     final Dio dio = Dio();
 
     final accessToken =
