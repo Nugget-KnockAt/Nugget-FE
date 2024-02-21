@@ -204,24 +204,14 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     _isEventavoke = false;
   }
 
-  void _showEventDialog() async {
-    await showCupertinoDialog(
-      context: context,
-      builder: (context) {
-        return CupertinoAlertDialog(
-          title: const Text('Event'),
-          content: const Text('Event Sent'),
-          actions: [
-            CupertinoDialogAction(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
+  void _showEventDialog() {
+    const snackBar = SnackBar(
+      content: Text('Event successfully sent!'),
+      duration: Duration(seconds: 3),
     );
+
+    // ScaffoldMessenger를 사용하여 현재 context에 Snackbar를 표시합니다.
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   void _handleDoubleTap() async {
