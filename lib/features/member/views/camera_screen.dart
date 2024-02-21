@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -194,6 +195,26 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     }));
   }
 
+  void _showEventDialog() async {
+    await showCupertinoDialog(
+      context: context,
+      builder: (context) {
+        return CupertinoAlertDialog(
+          title: const Text('Event'),
+          content: const Text('Event Sent'),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _handleDoubleTap() async {
     final Dio dio = Dio();
 
@@ -219,6 +240,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
     if (response.statusCode == 200) {
       print('Double Tap Event Sent');
+
+      _showEventDialog();
 
       print(response.data['result']['guardianList']);
     } else {
@@ -251,6 +274,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
     if (response.statusCode == 200) {
       print('Long Press Event Sent');
+
+      _showEventDialog();
 
       print(response.data['result']['guardianList']);
     } else {
@@ -301,6 +326,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
       if (response.statusCode == 200) {
         print('Drag Event Sent');
+
+        _showEventDialog();
 
         print(response.data['result']['guardianList']);
       } else {
