@@ -104,7 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     textStyle: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  child: const Text('로그인'),
+                  child: const Text('Sign In'),
                 ),
               ],
             ),

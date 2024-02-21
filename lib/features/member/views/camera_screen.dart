@@ -46,6 +46,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   //추가
   int _frameCounter = 0; // 프레임 카운터 선언
   final int _frameThreshold = 60; // 처리 프레임 설정
+  Interpreter? interpreter;
+  bool _isEventavoke = false;
 
   @override
   void initState() {
@@ -58,6 +60,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   void dispose() {
     // 카메라 컨트롤러를 해제한다.
     _cameraController.dispose();
+
+    _cameraController.stopImageStream();
+    interpreter?.close();
 
     super.dispose();
   }
@@ -119,7 +124,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
       _cameraController.startImageStream((CameraImage cameraImage) async {
         _frameCounter++; // 프레임 카운터 증가
-        if (_frameCounter >= _frameThreshold) {
+        if (_frameCounter >= _frameThreshold && !_isEventavoke) {
           // 프레임 카운터가 임계값에 도달했는지 확인
           _frameCounter = 0; // 프레임 카운터 리셋
 
@@ -189,10 +194,12 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     setState(() {});
   }
 
-  void _onTapSettings() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
+  void _onTapSettings() async {
+    _isEventavoke = true;
+    await Navigator.push(context, MaterialPageRoute(builder: (context) {
       return const TouchSettingsScreen();
     }));
+    _isEventavoke = false;
   }
 
   void _showEventDialog() async {

@@ -28,7 +28,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   final bool _isEmailAvailable = false;
 
-  late Role _role;
+  Role? _role;
 
   @override
   void dispose() {
@@ -53,7 +53,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             password: password!,
             name: name!,
             phoneNumber: phoneNumber!,
-            role: _role,
+            role: _role!,
           );
 
       if (userInfo.role == Role.guardian) {
