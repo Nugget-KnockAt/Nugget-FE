@@ -249,6 +249,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
       print('Double Tap Event Sent');
 
       _showEventDialog();
+      await flutterTts.speak('Double Tap Event Sent');
 
       print(response.data['result']['guardianList']);
     } else {
@@ -283,6 +284,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
       print('Long Press Event Sent');
 
       _showEventDialog();
+      await flutterTts.speak('Long Press Event Sent');
 
       print(response.data['result']['guardianList']);
     } else {
@@ -299,10 +301,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
     Position position = await _getCurrentLocation();
 
-    late Response response;
     try {
       if (details.primaryDelta! > 30) {
-        response = await dio.post(
+        final response = await dio.post(
           '$commonUrl/member/event',
           data: {
             'action': 'dragDown',
@@ -315,8 +316,16 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
             },
           ),
         );
+
+        if (response.statusCode == 200) {
+          print('Drag Down Event Sent');
+          _showEventDialog();
+          await flutterTts.speak('Drag Down Event Sent');
+        } else {
+          print('Failed to send drag down event');
+        }
       } else if (details.primaryDelta! < -30) {
-        response = await dio.post(
+        final response = await dio.post(
           '$commonUrl/member/event',
           data: {
             'action': 'dragUp',
@@ -329,16 +338,14 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
             },
           ),
         );
-      }
 
-      if (response.statusCode == 200) {
-        print('Drag Event Sent');
-
-        _showEventDialog();
-
-        print(response.data['result']['guardianList']);
-      } else {
-        print('Failed to send drag event');
+        if (response.statusCode == 200) {
+          print('Drag Up Event Sent');
+          _showEventDialog();
+          await flutterTts.speak('Drag Up Event Sent');
+        } else {
+          print('Failed to send drag up event');
+        }
       }
     } catch (e) {
       print(e);
