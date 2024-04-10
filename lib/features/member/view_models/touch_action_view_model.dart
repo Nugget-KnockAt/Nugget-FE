@@ -3,33 +3,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nugget/features/member/models/touch_action_model.dart';
 import 'package:nugget/features/member/repository/touch_setting_repository.dart';
 
+final touchSettingRepository = TouchSettingRepository();
+
 // Providers
 
 final doubleTapActionProvider =
     AsyncNotifierProvider<DoubleTapActionNotifier, TouchActionModel>(
   () => DoubleTapActionNotifier(
-    TouchSettingRepository(),
+    touchSettingRepository,
   ),
 );
 
 final longPressActionProvider =
     AsyncNotifierProvider<LongPressActionNotifier, TouchActionModel>(
   () => LongPressActionNotifier(
-    TouchSettingRepository(),
+    touchSettingRepository,
   ),
 );
 
 final dragUpActionProvider =
     AsyncNotifierProvider<DragUpActionNotifier, TouchActionModel>(
   () => DragUpActionNotifier(
-    TouchSettingRepository(),
+    touchSettingRepository,
   ),
 );
 
 final dragDownActionProvider =
     AsyncNotifierProvider<DragDownActionNotifier, TouchActionModel>(
   () => DragDownActionNotifier(
-    TouchSettingRepository(),
+    touchSettingRepository,
   ),
 );
 
