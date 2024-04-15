@@ -10,6 +10,7 @@ import 'package:nugget/features/authentication/models/user_info_model.dart';
 import 'package:nugget/features/authentication/view_models/user_info_view_model.dart';
 import 'package:nugget/features/guardian/views/guardian_map_screen.dart';
 import 'package:nugget/features/member/views/camera_screen.dart';
+import 'package:nugget/features/onboarding/views/onboarding_screen.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -26,7 +27,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   final Map<String, String> _formData = {};
 
-  final bool _isEmailAvailable = false;
+  bool _isEmailAvailable = false;
 
   Role? _role;
 
@@ -65,9 +66,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       } else {
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const CameraScreen()),
-            (route) => false);
+          context,
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+          (route) => false,
+        );
       }
     }
   }
@@ -83,7 +85,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       );
       final result = response.data['result'];
 
-      if (result == 'true') {
+      print(result);
+
+      if (result.toString() == 'true') {
         return true;
       } else {
         return false;
@@ -106,8 +110,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     }
     // 이메일 중복확인을 위한 GET request
     final result = await checkEmailExist(_emailController.text);
+    print(result);
     if (result) {
       if (!mounted) return;
+      _isEmailAvailable = true;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Email is available')),
       );

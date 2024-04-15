@@ -180,9 +180,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else {
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const CameraScreen()),
-          (route) => false);
+        context,
+        MaterialPageRoute(builder: (context) => const CameraScreen()),
+        (route) => false,
+      );
     }
   }
 

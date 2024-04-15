@@ -57,6 +57,8 @@ dependencies:
   image: ^4.1.7
   path_provider: ^2.1.2
   flutter_config: ^2.0.2
+  speech_to_text: ^6.6.0
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -107,6 +109,8 @@ flutter:
     - assets/logo/
     - assets/icons/
     - assets/models/
+    - assets/images/
+    - assets/sounds/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

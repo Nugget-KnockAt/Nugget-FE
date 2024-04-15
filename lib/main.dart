@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nugget/common/logger/logger.dart';
 
 import 'package:nugget/features/authentication/views/home_screen.dart';
+import 'package:nugget/features/member/views/camera_screen.dart';
+import 'package:nugget/features/onboarding/views/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
